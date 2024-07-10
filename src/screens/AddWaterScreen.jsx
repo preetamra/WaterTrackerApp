@@ -1,13 +1,23 @@
-import React, { useRef, useState } from 'react';
+import React, { 
+  useRef, 
+  useState,
+  useCallback
+} from 'react';
 import {
     Button,
     SafeAreaView,
     View,
     Pressable,
-    TextInput
+    TextInput,
+    Text
 } from 'react-native';
-import Animated, { useSharedValue, useAnimatedStyle, withSpring, interpolate, Extrapolation, useAnimatedReaction } from 'react-native-reanimated';
+import Animated, { useSharedValue, useAnimatedStyle, withSpring, interpolate, Extrapolation, useDerivedValue, useAnimatedProps } from 'react-native-reanimated';
 import { Gesture, GestureDetector, GestureHandlerRootView, useCode, call} from 'react-native-gesture-handler';
+import {
+  BottomSheetModal,
+  BottomSheetView,
+  BottomSheetModalProvider,
+} from '@gorhom/bottom-sheet';
 
 import GlassOfWaterSvg from '../assets/glassOfWaterSvg';
 import { set } from 'firebase/database';
@@ -15,8 +25,15 @@ import { set } from 'firebase/database';
 const AnimatedText  = Animated.createAnimatedComponent(TextInput);
 
 function AddWaterScreen(props) {
+   const [bottomSheetBackDrop, setBottomSheetBackDrop] = useState(false);
+
+   const [inputValue, setInputValue] = useState('');
+
     const inputRef = useRef(null);
     const height = useSharedValue(10);
+
+    const bottomSheetModalRef = useRef(null);
+    const snapPoints = React.useMemo(() => ['25%', '50%'], []);
 
     const [isBottleSelected, setIsBottleSelected] = useState(false);
 
@@ -24,7 +41,52 @@ function AddWaterScreen(props) {
         height: interpolate(height.value, [0, 300], [300, 0], Extrapolation.CLAMP),
     }));
 
-    const GlassShape = () => (
+    const animatedText = useDerivedValue(() => {
+
+      if(isBottleSelected)
+        {
+          if(Math.round(interpolate(height.value, [0,300],[1000,0], Extrapolation.CLAMP)) > 970)
+          {
+            return '1000'; 
+          }else if(Math.round(interpolate(height.value, [0,300],[1000,0], Extrapolation.CLAMP)) < 60)
+          {
+            return '10';
+          }
+          return `${Math.round(interpolate(height.value, [0,300],[1000,0], Extrapolation.CLAMP))}`;
+        }
+
+      if(Math.round(interpolate(height.value, [0,300],[300,0], Extrapolation.CLAMP)) > 290)
+        {
+          return '300'; 
+        }else if(Math.round(interpolate(height.value, [0,300],[300,0], Extrapolation.CLAMP)) < 20)
+        {
+          return '10';
+        }
+      return `${Math.round(interpolate(height.value, [0,300],[300,0], Extrapolation.CLAMP))}`;
+    });
+
+  const animatedTextProps = useAnimatedProps(() => {
+      return {
+        text: animatedText.value,
+      };
+  });
+
+  const handlePresentModalPress = useCallback(() => {
+    bottomSheetModalRef.current?.present();
+  }, []);
+
+  const handleSheetChanges = useCallback((index) => {
+    console.log('handleSheetChanges', index);
+    if(index == 1)
+      {
+        setBottomSheetBackDrop(true);
+      }else if(index == -1)
+      {
+         setBottomSheetBackDrop(false);
+      }
+  }, []);
+
+  const GlassShape = () => (
       <GestureDetector gesture={pan}>
             <View style={{
                 width: 200,
@@ -47,9 +109,9 @@ function AddWaterScreen(props) {
                     ></Animated.View>
             </View>
       </GestureDetector>
-    );
+  );
 
-    const BottleShape = () => (
+  const BottleShape = () => (
             <View style={{ alignItems: 'center' }}>
                 {/* Cap */}
                 <View style={{
@@ -85,7 +147,7 @@ function AddWaterScreen(props) {
                 </View>
               </GestureDetector>
             </View>
-    );
+  );
 
     const pan = Gesture.Pan()
         .onUpdate((e) => {
@@ -101,7 +163,7 @@ function AddWaterScreen(props) {
 
             if(inputRef?.current)
               {
-                inputRef.current.setNativeProps({text: Math.round(val)});
+                inputRef.current.setNativeProps({text:`${Math.round(val)}`});
               }
           }
         })
@@ -109,19 +171,55 @@ function AddWaterScreen(props) {
 
     return (
         <GestureHandlerRootView style={{ flex: 1 }}>
+          <BottomSheetModalProvider>
             <SafeAreaView style={{
                 flex: 1,
                 justifyContent: 'center',
                 alignItems: 'center',
-                backgroundColor: 'white'
+                backgroundColor: 'white',
             }}>
+              {
+                bottomSheetBackDrop && (
+                  <View style={{
+                    position: 'absolute',
+                    top:0,
+                    bottom:0,
+                    left:0,
+                    right:0,
+                    backgroundColor: 'rgba(0,0,0,0.5)',
+                    zIndex: 1,
+                   }}>
+                    </View>
+                )
+              }
                 <View
                     style={{
                         flex: 1,
-                        justifyContent: 'center',
+                        justifyContent: 'space-between',
                         alignItems: 'center',
+                        flexDirection: 'row',
+                        width: "100%",
+                        height: "100%",
                     }}
                 >
+                  <Text>
+                  </Text>
+                  <Pressable
+                  onPress={() => {
+                    props.navigation.navigate('HomeScreen');
+                  }}
+                  style={{
+                    backgroundColor: '#00bcd4',
+                    padding: 10,
+                    borderRadius: 10,
+                    marginRight: 20,
+                    marginTop: 20,
+                  }}
+                  >
+                    <Text>
+                      Close
+                    </Text>
+                  </Pressable>
                 </View>
                 <View
                     style={{
@@ -136,11 +234,15 @@ function AddWaterScreen(props) {
                     {isBottleSelected ? <BottleShape /> : <GlassShape />}
                 </View>
                 <AnimatedText
-                ref={inputRef}
-                defaultValue="10"
-                editable={false}
-                underlineColorAndroid={'transparent'}
-                ></AnimatedText>
+                    value={animatedText.value}
+                    editable={false}
+                    underlineColorAndroid={'transparent'}
+                    animatedProps={animatedTextProps}
+                    style={{
+                        fontSize: 20,
+                        marginTop: 10
+                    }}
+                />
                 <View
                     style={{
                         flex: 1,
@@ -169,10 +271,43 @@ function AddWaterScreen(props) {
                         title='Custom'
                         onPress={() => {
                             // Add custom button functionality here
+                            handlePresentModalPress();
                         }}
                     />
                 </View>
+                <BottomSheetModal
+                ref={bottomSheetModalRef}
+                index={1}
+                snapPoints={snapPoints}
+                onChange={handleSheetChanges}
+                 >
+                  <BottomSheetView style={{
+                    flex: 1,
+                    alignItems: 'center',
+                  }}>
+                    <Text>
+                      Custom Water Intake
+                    </Text>
+                    <TextInput
+                      style={{
+                        width: 200,
+                        height: 40,
+                        borderColor: 'gray',
+                        borderWidth: 1,
+                        marginTop: 20,
+                      }}
+                    />
+                    <Button
+                      title='Save'
+                      onPress={() => {
+                        // Add save button functionality here
+                        bottomSheetModalRef.current?.dismiss();
+                      }}
+                    />
+                  </BottomSheetView>
+                </BottomSheetModal>
             </SafeAreaView>
+          </BottomSheetModalProvider>
         </GestureHandlerRootView>
     );
 }

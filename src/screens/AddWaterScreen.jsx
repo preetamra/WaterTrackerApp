@@ -1,7 +1,8 @@
 import React, { 
   useRef, 
   useState,
-  useCallback
+  useCallback,
+  useEffect
 } from 'react';
 import {
     Button,
@@ -18,9 +19,9 @@ import {
   BottomSheetView,
   BottomSheetModalProvider,
 } from '@gorhom/bottom-sheet';
+import * as SQLite from 'expo-sqlite';
 
 import GlassOfWaterSvg from '../assets/glassOfWaterSvg';
-import { set } from 'firebase/database';
 
 const AnimatedText  = Animated.createAnimatedComponent(TextInput);
 
@@ -262,7 +263,71 @@ function AddWaterScreen(props) {
                     />
                     <Pressable
                         onPress={() => {
-                            props.navigation.navigate('HomeScreen'); // Assuming 'HomeScreen' is the correct navigation target
+                            // props.navigation.navigate('HomeScreen'); // Assuming 'HomeScreen' is the correct navigation target
+                            (
+                              async () => {
+                                try{
+                                  const db = await SQLite.openDatabaseAsync('databaseName');
+
+                                  await db.execAsync(`
+                                    PRAGMA journal_mode = WAL;
+                                    CREATE TABLE IF NOT EXISTS test (
+                                      id INTEGER PRIMARY KEY NOT NULL,
+                                      value TEXT NOT NULL,
+                                      intValue INTEGER,
+                                      dateTime DATETIME NOT NULL
+                                    );
+                                  `);
+                                  
+                                  const statement = await db.prepareAsync(
+                                    'INSERT INTO test (value, intValue, dateTime) VALUES ($value, $intValue, $dateTime)'
+                                  );
+                                  
+                                  let result = await statement.executeAsync({
+                                    $value: new Date().toISOString(),
+                                    $intValue: Math.round(interpolate(height.value, [0, 300], [isBottleSelected ? 1000 : 300, 0], Extrapolation.CLAMP)),
+                                    $dateTime: new Date().toISOString()
+                                  });
+                                  
+                                  const today = new Date().toISOString().split('T')[0];
+                                  const startOfDay = `${today}T00:00:00.000Z`;
+                                  const endOfDay = `${today}T23:59:59.999Z`;
+                                  
+                                  const todayEntries = await db.getAllAsync(
+                                    'SELECT * FROM test WHERE dateTime BETWEEN ? AND ? ORDER BY dateTime ASC',
+                                    [startOfDay, endOfDay]
+                                  );
+                                  
+                                  for (const row of todayEntries) {
+                                    console.log("Today :- ",row.id, row.value, row.intValue, row.dateTime);
+                                  }
+
+                                  const today1 = new Date();
+                                  const yesterday = new Date(today1);
+                                  yesterday.setDate(yesterday.getDate() - 1);
+                                  
+                                  const startOfYesterday = `${yesterday.toISOString().split('T')[0]}T00:00:00.000Z`;
+                                  const endOfYesterday = `${yesterday.toISOString().split('T')[0]}T23:59:59.999Z`;
+                                  
+                                  const yesterdayEntries = await db.getAllAsync(
+                                    'SELECT * FROM test WHERE dateTime BETWEEN ? AND ? ORDER BY dateTime ASC',
+                                    [startOfYesterday, endOfYesterday]
+                                  );
+                                  
+                                  for (const row of yesterdayEntries) {
+                                    console.log("yesturday :- ",row.id, row.value, row.intValue, row.dateTime);
+                                  }
+
+                                  const allRows = await db.getAllAsync('SELECT * FROM test');
+
+                                  for (const row of allRows) {
+                                    console.log(row.id, row.value, row.intValue);
+                                  }
+                                }catch(e){
+                                  console.error(e);
+                                }
+                              }
+                            )()
                         }}
                     >
                         <GlassOfWaterSvg />

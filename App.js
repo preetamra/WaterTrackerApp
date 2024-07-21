@@ -3,6 +3,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import React, { useEffect, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as SQLite from 'expo-sqlite';
 
 import Recommend from './src/screens/Recommend';
 import HomeScreen from './src/screens/HomeScreen';
@@ -10,6 +11,8 @@ import HomeScreen from './src/screens/HomeScreen';
 import HomeScreenNavigation from './src/navigation/HomeScreenNavigation';
 
 const Stack = createNativeStackNavigator();
+
+const initialExecute = false;
 
 export default function App() {
 

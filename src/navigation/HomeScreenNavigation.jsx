@@ -9,6 +9,7 @@ import AddWaterScreen from '../screens/AddWaterScreen';
 import CalenderScreen from '../screens/CalenderScreen';
 import SettingScreen from '../screens/SettingScreen';
 import RemainderScreen from '../screens/RemainderScreen';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const Stack = createNativeStackNavigator();
 
@@ -25,6 +26,11 @@ export default function HomeScreenNavigation() {
   } */
 
   return (
+    <SafeAreaView
+    style={{
+      flex: 1,
+    }}
+    >
       <Stack.Navigator
       screenOptions={{
         headerShown: false
@@ -37,18 +43,18 @@ export default function HomeScreenNavigation() {
         <Stack.Screen 
         name="AddWaterScreen" 
         component={AddWaterScreen} />
-        <Stack.Screen 
-        name="CalenderScreen" 
-        component={CalenderScreen} 
+        <Stack.Screen
+        name="CalenderScreen"
+        component={CalenderScreen}
         options={{
-            animation: 'slide_from_left',        
+          animation: 'slide_from_left',        
         }}
         />
-        <Stack.Screen 
-        name="SettingScreen" 
-        component={SettingScreen} 
+        <Stack.Screen
+        name="SettingScreen"
+        component={SettingScreen}
         options={{
-            animation: 'slide_from_right',
+          animation: 'slide_from_right',
         }}
         />
         <Stack.Screen
@@ -56,6 +62,7 @@ export default function HomeScreenNavigation() {
         component={RemainderScreen}
         />
       </Stack.Navigator>
+    </SafeAreaView>
   );
 }
 

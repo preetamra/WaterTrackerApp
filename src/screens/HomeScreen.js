@@ -27,13 +27,27 @@ import {
     withRepeat,
     withTiming,
     useDerivedValue,
-    Easing
- } from 'react-native-reanimated';
+    Easing,
+    SharedTransition,
+    withSpring
+} from 'react-native-reanimated';
+import Animated from 'react-native-reanimated';
 
- import GlassOfWaterSvg from '../assets/glassOfWaterSvg';
+import GlassOfWaterSvg from '../assets/glassOfWaterSvg';
 
  const size = 200;
  const value = 45;
+
+const customTransition = SharedTransition.custom((values) => {
+  'worklet';
+  console.log(values);
+  return {
+    height: withSpring(values.targetHeight),
+    width: withSpring(values.targetWidth),
+    originX: withSpring(values.targetOriginX),
+    originY: withSpring(values.targetOriginY),
+  };
+});
   
   function HomeScreen(props) {
     const radius = size * 0.5; // outer circle
@@ -170,7 +184,7 @@ import {
             <Button
             title='Settings'
             onPress={() => {
-              props.navigation.navigate('SettingScreen');                            
+              props.navigation.navigate('SettingScreen');
             }}
             ></Button>
           </View>
@@ -181,8 +195,7 @@ import {
           position:"relative",
           width:450,
           height:450,
-        }}
-        >
+        }}>
            <Image
            source={{
             uri: Image.resolveAssetSource(require('../assets/newOnlyTurtle.png')).uri
@@ -230,33 +243,16 @@ import {
             backgroundColor: '#00BEDE',      
            }}
            ></View>
-           {/* <Canvas
-           style={{
-            width: 450,
-            height: 150,
-            position: 'absolute',
-            left: 50,
-            bottom: 265,
-            right: 0,
-            justifyContent: 'center',
-            alignItems: 'center',
-            zIndex: 1,
-            flex:1,
-            }}
-           >
-            <Path path={clipPath} style={"fill"} color={"#00BEDE"}></Path>
-           </Canvas> */}
-{/* <Canvas style={{ width: 500, height: 150 }}>
-<Path path={clipPath} style={"fill"} color={"#00BEDE"}></Path>
-</Canvas> */}
         </View>
-        <View
+        <Animated.View
         style={{
           flex:1,
           justifyContent: 'center',
           alignItems: 'center',
           marginBottom: 10,
         }}
+        /* sharedTransitionTag='addWaterScreen'
+        sharedTransitionStyle={customTransition} */
         >
            <Pressable
            onPress={() => {
@@ -265,7 +261,7 @@ import {
            >
             <GlassOfWaterSvg/>
            </Pressable>
-        </View>
+        </Animated.View>
       </SafeAreaView>
     );
 }

@@ -1,6 +1,7 @@
 import React, { useRef, useEffect } from 'react';
 import { View, Image, StyleSheet, Dimensions } from 'react-native';
 import Canvas, { Image as CanvasImage } from 'react-native-canvas';
+import { horizontalScale, verticalScale } from '../Utils/ResponsiveDesign';
 
 const { width, height } = Dimensions.get('window');
 
@@ -23,8 +24,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   image: {
-    width: 400,   // Adjust width as needed
-    height: 400, // Adjust height as needed
+    width: horizontalScale(400),   // Adjust width as needed
+    height: verticalScale(400), // Adjust height as needed
   },
   redOverlay: {
     position: 'absolute',

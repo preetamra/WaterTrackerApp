@@ -30,6 +30,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import DateTimePicker from '@react-native-community/datetimepicker';
 
 import { scheduleAllNotification } from '../Utils/NotificationSchedule';
+import { horizontalScale, moderateScale, verticalScale } from '../Utils/ResponsiveDesign';
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -52,9 +53,12 @@ async function schedulePushNotification(remaining) {
 
 function RemainderScreen(props) {
   const [isEnabled, setIsEnabled] = useState(false);
-  const toggleSwitch = () => {
+  const toggleSwitch = (value) => {
     setIsEnabled(previousState => !previousState);
-    scheduleAllNotification();
+    if(value)
+    {
+      scheduleAllNotification(sliderValue,sliderMinValue*5);
+    }
   };
 
   const [sliderValue, setSliderValue] = useState(1);
@@ -109,10 +113,10 @@ function RemainderScreen(props) {
           bottomSheetBackDrop && (
             <View style={{
               position: 'absolute',
-              top:0,
+              top:verticalScale(0),
               bottom:0,
-              left:0,
-              right:0,
+              left:horizontalScale(0),
+              right:horizontalScale(0),
               backgroundColor: 'rgba(0,0,0,0.5)',
               zIndex: 1,
             }}>
@@ -125,7 +129,7 @@ function RemainderScreen(props) {
         justifyContent: 'center',
         alignItems: 'center',
         backgroundColor: 'white',
-        marginTop: 30,
+        marginTop: verticalScale(30),
       }}>
         <View
         style={{
@@ -134,7 +138,7 @@ function RemainderScreen(props) {
           justifyContent: 'space-between',
           alignItems: 'center',
           width:"100%",
-          marginBottom: 20,
+          marginBottom: verticalScale(20),
         }}
         >
           <Pressable
@@ -142,7 +146,7 @@ function RemainderScreen(props) {
             props.navigation.goBack();
           }}
           style={{
-            marginLeft: 20,
+            marginLeft: horizontalScale(20),
           }}
           >
           <Image
@@ -150,8 +154,8 @@ function RemainderScreen(props) {
             require('../assets/BackButton.png')
           }
           style={{
-            width: 40,
-            height: 40,
+            width: horizontalScale(40),
+            height: verticalScale(40),
           }}
           ></Image>
           </Pressable>
@@ -167,9 +171,9 @@ function RemainderScreen(props) {
           alignItems: 'center',
           width:"90%",
           backgroundColor: '#f9fbfa',
-          borderRadius: 20,
-          height: 100,
-          marginBottom: 20,
+          borderRadius: moderateScale(20),
+          height: verticalScale(100),
+          marginBottom: verticalScale(20),
         }}
         >
           <View
@@ -177,12 +181,12 @@ function RemainderScreen(props) {
             flex: 2,
             justifyContent: 'flex-start',
             alignItems: 'center',
-            marginRight: 60,
+            marginRight: horizontalScale(60),
           }}
           >
             <Text
             style={{
-              fontSize: 25,
+              fontSize: moderateScale(25),
               fontWeight: '500',
               fontFamily: 'Inter'
             }}
@@ -195,7 +199,7 @@ function RemainderScreen(props) {
             flex: 1,
             justifyContent: 'center',
             alignItems: 'center',
-            marginRight: 20,
+            marginRight: horizontalScale(20),
             flexDirection: 'row',
             justifyContent: 'space-evenly',
             alignItems: 'center',
@@ -203,7 +207,7 @@ function RemainderScreen(props) {
           >
             <Text
             style={{
-              fontSize: 17.5,
+              fontSize: moderateScale(17.5),
               color: isEnabled ? '#45B8C2' : 'gray',
               fontFamily: 'Inter',
               fontWeight: '500',
@@ -236,7 +240,7 @@ function RemainderScreen(props) {
           <View
           style={{
             flex: 1,
-            height: 100,
+            height: verticalScale(100),
           }}
           >
           <View
@@ -251,7 +255,7 @@ function RemainderScreen(props) {
                 alignItems: 'center',
                 width:"100%",
                 backgroundColor: '#f9fbfa',
-                borderRadius: 20,
+                borderRadius: moderateScale(10),
                 gap: 0,
                },
             ]
@@ -283,8 +287,8 @@ function RemainderScreen(props) {
                   <Image
                   source={require('../assets/RemainderScreenCheckActive.png')}
                   style={{
-                    width: 30,
-                    height: 30,
+                    width: horizontalScale(30),
+                    height: verticalScale(30),
                   }}
                 ></Image>
                 )
@@ -294,8 +298,8 @@ function RemainderScreen(props) {
                   <Image
                   source={require('../assets/RemainderScreenCheckInActive.png')}
                   style={{
-                    width: 30,
-                    height: 30,
+                    width: horizontalScale(30),
+                    height: verticalScale(30),
                   }}
                 ></Image>                  
                 )
@@ -304,9 +308,9 @@ function RemainderScreen(props) {
                 style={[
                   {
                     color: '#D6D7D8',
-                    fontSize:15,
+                    fontSize:moderateScale(15),
                     fontWeight: 'bold',
-                    marginTop: 5,
+                    marginTop: verticalScale(5),
                   },
                   selectedTab === 0 && {
                     color: '#A8F7FB',
@@ -323,7 +327,7 @@ function RemainderScreen(props) {
                   flex: 1,
                   justifyContent: 'center',
                   alignItems: 'center',
-                  marginLeft: 10,
+                  marginLeft: horizontalScale(10),
                   height: "100%",
                   width: "100%",
                   borderTopEndRadius: 20,
@@ -343,8 +347,8 @@ function RemainderScreen(props) {
                   <Image
                   source={require('../assets/RemainderScreenCheckActive.png')}
                   style={{
-                    width: 30,
-                    height: 30,
+                    width: horizontalScale(30),
+                    height: verticalScale(30),
                   }}
                 ></Image>
                 )
@@ -354,8 +358,8 @@ function RemainderScreen(props) {
                   <Image
                   source={require('../assets/RemainderScreenCheckInActive.png')}
                   style={{
-                    width: 30,
-                    height: 30,
+                    width: horizontalScale(30),
+                    height: verticalScale(30),
                   }}
                 ></Image>                  
                 )
@@ -364,9 +368,9 @@ function RemainderScreen(props) {
                 style={[
                   {
                     color: '#D6D7D8',
-                    fontSize:15,
+                    fontSize:moderateScale(15),
                     fontWeight: 'bold',
-                    marginTop: 5,
+                    marginTop: verticalScale(5),
                   },
                   selectedTab === 1 && {
                     color: '#A8F7FB',
@@ -387,14 +391,14 @@ function RemainderScreen(props) {
           style={{
             width: '100%',
             height: 'auto',
-            borderTopWidth: 5,
+            borderTopWidth: verticalScale(5),
             borderColor: "#00bed8",
           }}
           >
             <View
             style={
               {
-                height:40,
+                height:verticalScale(40),
                 backgroundColor:"#e0f8fc"
               }
             }
@@ -412,12 +416,12 @@ function RemainderScreen(props) {
                   backgroundColor: '#e0f8fc',
                   borderBottomLeftRadius: 20,
                   borderBottomRightRadius: 20,
-                  marginBottom: 20,
+                  marginBottom: verticalScale(20),
                 }}
                 >
                   <Text
                   style={{
-                    fontSize: 18.5,
+                    fontSize:moderateScale(18.5),
                     color: '#36494F',
                     fontFamily: 'Inter',
                     fontWeight: 'bold',
@@ -425,24 +429,24 @@ function RemainderScreen(props) {
                   >
                     Notification Interval
                   </Text>
-                  <View 
+                  <View
                   style={{
                     width: '100%',
                     justifyContent: 'center',
                     alignItems: 'center',
-                    paddingHorizontal: 20,
-                    position: 'relative',
-                    marginTop: 20,
+                    paddingHorizontal: horizontalScale(20),
+                    marginTop: verticalScale(20),
+                    backgroundColor:"red",
                   }}
                   >
                   <Text
-        style={{
-          fontSize: 21,
-          color: '#3FBDC5',
-          fontWeight: 'bold',
-        }}
-        >
-          {
+                    style={{
+                      fontSize:moderateScale(21),
+                      color: '#3FBDC5',
+                      fontWeight: 'bold',
+                    }}
+                  >
+                {
             sliderValue
           } Hrs
         </Text>
@@ -465,19 +469,19 @@ function RemainderScreen(props) {
           width: '100%',
           justifyContent: 'space-between',
           alignItems: 'center',
-          marginTop: 10,
-          height: 5,
+          marginTop: verticalScale(10),
+          height: verticalScale(5),
           position: 'absolute',
-          top: 32,
+          top: verticalScale(32),
           flexDirection: 'row',
           zIndex: -1,
-          paddingHorizontal: 5,
+          paddingHorizontal: horizontalScale(5),
         }}
         >
           <View
           style={{
             width: '1%',
-            height: 10,
+            height: verticalScale(10),
             backgroundColor: '#03BED9',
           }}
           >
@@ -485,7 +489,7 @@ function RemainderScreen(props) {
           <View
           style={{
             width: '1%',
-            height: 10,
+            height: verticalScale(10),
             backgroundColor: '#03BED9',
           }}
           >
@@ -493,7 +497,7 @@ function RemainderScreen(props) {
           <View
           style={{
             width: '1%',
-            height: 10,
+            height: verticalScale(10),
             backgroundColor: '#03BED9',
           }}
           >
@@ -501,7 +505,7 @@ function RemainderScreen(props) {
           <View
           style={{
             width: '1%',
-            height: 10,
+            height: verticalScale(10),
             backgroundColor: '#03BED9',
           }}
           >
@@ -509,7 +513,7 @@ function RemainderScreen(props) {
           <View
           style={{
             width: '1%',
-            height: 10,
+            height: verticalScale(10),
             backgroundColor: '#03BED9',
           }}
           >
@@ -521,14 +525,14 @@ function RemainderScreen(props) {
                     width: '100%',
                     justifyContent: 'center',
                     alignItems: 'center',
-                    paddingHorizontal: 20,
+                    paddingHorizontal: horizontalScale(20),
                     position: 'relative',
-                    marginTop: 20,
+                    marginTop: verticalScale(20),
                   }}
                   >
                   <Text
         style={{
-          fontSize: 21,
+          fontSize:moderateScale(21),
           color: '#3FBDC5',
           fontWeight: 'bold',
         }}
@@ -556,19 +560,19 @@ function RemainderScreen(props) {
           width: '100%',
           justifyContent: 'space-between',
           alignItems: 'center',
-          marginTop: 10,
-          height: 5,
+          marginTop: verticalScale(10),
+          height: verticalScale(5),
           position: 'absolute',
-          top: 32,
+          top: verticalScale(32),
           flexDirection: 'row',
           zIndex: -1,
-          paddingHorizontal: 5,
+          paddingHorizontal: horizontalScale(5),
         }}
         >
           <View
           style={{
             width: '1%',
-            height: 10,
+            height: verticalScale(10),
             backgroundColor: '#03BED9',
           }}
           >
@@ -576,7 +580,7 @@ function RemainderScreen(props) {
           <View
           style={{
             width: '1%',
-            height: 10,
+            height: verticalScale(10),
             backgroundColor: '#03BED9',
           }}
           >
@@ -584,7 +588,7 @@ function RemainderScreen(props) {
           <View
           style={{
             width: '1%',
-            height: 10,
+            height: verticalScale(10),
             backgroundColor: '#03BED9',
           }}
           >
@@ -592,7 +596,7 @@ function RemainderScreen(props) {
           <View
           style={{
             width: '1%',
-            height: 10,
+            height: verticalScale(10),
             backgroundColor: '#03BED9',
           }}
           >
@@ -600,7 +604,7 @@ function RemainderScreen(props) {
           <View
           style={{
             width: '1%',
-            height: 10,
+            height: verticalScale(10),
             backgroundColor: '#03BED9',
           }}
           >
@@ -608,7 +612,7 @@ function RemainderScreen(props) {
           <View
           style={{
             width: '1%',
-            height: 10,
+            height: verticalScale(10),
             backgroundColor: '#03BED9',
           }}
           >
@@ -616,7 +620,7 @@ function RemainderScreen(props) {
           <View
           style={{
             width: '1%',
-            height: 10,
+            height: verticalScale(10),
             backgroundColor: '#03BED9',
           }}
           >
@@ -624,7 +628,7 @@ function RemainderScreen(props) {
           <View
           style={{
             width: '1%',
-            height: 10,
+            height: verticalScale(10),
             backgroundColor: '#03BED9',
           }}
           >
@@ -632,7 +636,7 @@ function RemainderScreen(props) {
           <View
           style={{
             width: '1%',
-            height: 10,
+            height: verticalScale(10),
             backgroundColor: '#03BED9',
           }}
           >
@@ -640,7 +644,7 @@ function RemainderScreen(props) {
           <View
           style={{
             width: '1%',
-            height: 10,
+            height: verticalScale(10),
             backgroundColor: '#03BED9',
           }}
           >
@@ -648,7 +652,7 @@ function RemainderScreen(props) {
           <View
           style={{
             width: '1%',
-            height: 10,
+            height: verticalScale(10),
             backgroundColor: '#03BED9',
           }}
           >
@@ -656,7 +660,7 @@ function RemainderScreen(props) {
           <View
           style={{
             width: '1%',
-            height: 10,
+            height: verticalScale(10),
             backgroundColor: '#03BED9',
           }}
           >
@@ -671,18 +675,18 @@ function RemainderScreen(props) {
                     width: '90%',
                     justifyContent: 'space-between',
                     alignItems: 'center',
-                    marginTop: 20,
-                    height: 40,
+                    marginTop: verticalScale(20),
+                    height: verticalScale(40),
                     backgroundColor: '#f9fdfe',
-                    borderRadius: 25,
-                    height: 80,
+                    borderRadius: moderateScale(25),
+                    height: verticalScale(80),
                     flexDirection: 'row',
-                    paddingHorizontal: 20,
+                    paddingHorizontal: horizontalScale(20),
                   }}
                   >
                     <Text
                     style={{
-                      fontSize: 20,
+                      fontSize:moderateScale(20),
                       color: '#4C5459',
                       fontWeight: 'bold',
                     }}
@@ -692,7 +696,7 @@ function RemainderScreen(props) {
                     <View>
                       <Text
                       style={{
-                        fontSize: 16,
+                        fontSize:moderateScale(16),
                         color: '#45BBC3',
                         fontWeight: 'bold',
                       }}
@@ -709,19 +713,19 @@ function RemainderScreen(props) {
                     width: '90%',
                     justifyContent: 'space-between',
                     alignItems: 'center',
-                    marginTop: 20,
-                    height: 40,
+                    marginTop: verticalScale(20),
+                    height: verticalScale(40),
                     backgroundColor: '#f9fdfe',
-                    borderRadius: 25,
-                    height: 80,
+                    borderRadius: moderateScale(25),
+                    height: verticalScale(80),
                     flexDirection: 'row',
-                    paddingHorizontal: 20,
-                    marginBottom: 20,
+                    paddingHorizontal: horizontalScale(20),
+                    marginBottom: verticalScale(20),
                   }}
                   >
                     <Text
                     style={{
-                      fontSize: 20,
+                      fontSize:moderateScale(20),
                       color: '#4C5459',
                       fontWeight: 'bold',
                     }}
@@ -731,7 +735,7 @@ function RemainderScreen(props) {
                     <View>
                       <Text
                       style={{
-                        fontSize: 16,
+                        fontSize:moderateScale(16),
                         color: '#45BBC3',
                         fontWeight: 'bold',
                       }}
@@ -750,14 +754,14 @@ function RemainderScreen(props) {
                     backgroundColor: '#e0f8fc',
                     borderBottomLeftRadius: 20,
                     borderBottomRightRadius: 20,
-                    marginBottom: 20,
+                    marginBottom: verticalScale(20),
                     flexDirection: 'row',
                   }}
                   >
                     <Text
                     style={{
                       width: '70%',
-                      fontSize: 12.5,
+                      fontSize:moderateScale(12.5),
                       fontFamily: 'Inter',
                       fontWeight: 'bold',
                       color: '#7F9499',
@@ -787,12 +791,12 @@ function RemainderScreen(props) {
                   backgroundColor: '#e0f8fc',
                   borderBottomLeftRadius: 20,
                   borderBottomRightRadius: 20,
-                  marginBottom: 20,
+                  marginBottom: verticalScale(20),
                 }}
                 >
                   <Text
                   style={{
-                    fontSize: 18.5,
+                    fontSize:moderateScale(18.5),
                     color: '#36494F',
                     fontFamily: 'Inter',
                     fontWeight: 'bold',
@@ -805,9 +809,9 @@ function RemainderScreen(props) {
                     width: '100%',
                     justifyContent: 'center',
                     alignItems: 'center',
-                    paddingHorizontal: 20,
+                    paddingHorizontal: horizontalScale(20),
                     position: 'relative',
-                    marginTop: 20,
+                    marginTop: verticalScale(20),
                   }}
                   >
                   </View>
@@ -816,7 +820,7 @@ function RemainderScreen(props) {
                   style={{
                     flex: 1,
                     width: '100%',
-                    paddingHorizontal: 20,
+                    paddingHorizontal: horizontalScale(20),
                   }}
                   >
                     <View
@@ -957,14 +961,14 @@ function RemainderScreen(props) {
                     backgroundColor: '#e0f8fc',
                     borderBottomLeftRadius: 20,
                     borderBottomRightRadius: 20,
-                    marginBottom: 20,
+                    marginBottom: verticalScale(20),
                     flexDirection: 'row',
                   }}
                   >
                     <Text
                     style={{
                       width: '100%',
-                      fontSize: 12.5,
+                      fontSize:moderateScale(12.5),
                       fontFamily: 'Inter',
                       fontWeight: 'bold',
                       color: '#7F9499',
@@ -985,14 +989,14 @@ function RemainderScreen(props) {
               width: '70%',
               height: 'auto',
               backgroundColor: '#f2f2f2',
-              borderRadius: 20,
-              marginBottom: 20,
-              marginHorizontal: 50,
-              height: 2,
+              borderRadius: moderateScale(20),
+              marginBottom: verticalScale(20),
+              marginHorizontal: horizontalScale(20),
+              height: verticalScale(2),
             }}
             >
             </View>
-            <View
+            {/* <View
             style={{
               flex: 1,
               justifyContent: 'center',
@@ -1162,7 +1166,7 @@ function RemainderScreen(props) {
                   </Text>
                 </View>
               </ScrollView>            
-            </View>
+            </View>*/}
           </View>
         )
       }
@@ -1183,7 +1187,7 @@ function RemainderScreen(props) {
         >
           <Text
           style={{
-            fontSize:25,
+            fontSize:moderateScale(25),
             fontWeight:"bold",
             fontFamily:"Inter",
             margin:20,
@@ -1209,12 +1213,12 @@ function RemainderScreen(props) {
             justifyContent:"center",
             alignItems:"center",
             backgroundColor:"#384250",
-            borderRadius:50,
+            borderRadius: moderateScale(50),
           }}
           >
             <Text
             style={{
-              fontSize:20,
+              fontSize:moderateScale(20),
               fontWeight:"bold",
               fontFamily:"Inter",
               color:"#f9fdfe",
@@ -1240,7 +1244,7 @@ function RemainderScreen(props) {
         >
           <Text
           style={{
-            fontSize:25,
+            fontSize:moderateScale(25),
             fontWeight:"bold",
             fontFamily:"Inter",
             margin:20,
@@ -1266,12 +1270,12 @@ function RemainderScreen(props) {
             justifyContent:"center",
             alignItems:"center",
             backgroundColor:"#384250",
-            borderRadius:50,
+            borderRadius: moderateScale(50),
           }}
           >
             <Text
             style={{
-              fontSize:20,
+              fontSize:moderateScale(20),
               fontWeight:"bold",
               fontFamily:"Inter",
               color:"#f9fdfe",
@@ -1293,23 +1297,23 @@ const styles = StyleSheet.create({
     flex:1,
     flexDirection:"row",
     backgroundColor:"#f9fdfe",
-    height:50,
+    height:verticalScale(80),
     justifyContent:"space-around",
     alignItems:"center",
     margin:10,
-    borderRadius:20
+    borderRadius: moderateScale(20),
   },
   TimerMainContainer:{
     flex: 1,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    height: 50,
-    marginVertical:10
+    height: verticalScale(50),
+    marginVertical: verticalScale(10)
   },
   TimeText1:{
     color:"#313a3f",
-    fontSize:15.5,
+    fontSize:moderateScale(15.5),
   },
 })
   

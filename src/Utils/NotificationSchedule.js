@@ -1,6 +1,6 @@
 import * as Notifications from 'expo-notifications';
 
-export const scheduleAllNotification = async (title, body, trigger) => {
+export const scheduleAllNotification = async (hours,mins) => {
     Notifications.setNotificationHandler({
         handleNotification: async () => ({
           shouldShowAlert: true,
@@ -24,13 +24,10 @@ export const scheduleAllNotification = async (title, body, trigger) => {
             },
         });
     }
-
-
     
     await Notifications.cancelAllScheduledNotificationsAsync();
 
-    // const allIntervals = getHourlyIntervalsUntil10PM();
-    const allIntervals10Minutes = getTenMinuteIntervalsUntil10PM();
+    const allIntervals10Minutes = getTimeIntervalsUntil(22,0,hours,mins);
 
     console.log(allIntervals10Minutes);
 
@@ -48,39 +45,21 @@ export const scheduleAllNotification = async (title, body, trigger) => {
             trigger: {
                 hour: triggerTime.getHours(),
                 minute: triggerTime.getMinutes(),
-                repeats: true,
             },
         });
-    })
+    });
 };
 
-function getHourlyIntervalsUntil10PM() {
+function getTimeIntervalsUntil(targetHour, targetMinute, intervalHours, intervalMinutes) {
     const intervals = [];
     const now = new Date();
-    let currentHour = now.getHours();
-    const currentMinutes = now.getMinutes();
-
-    // Calculate the current time
-    let currentTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), currentHour, currentMinutes);
-
-    while (currentHour < 22) {
-        currentTime.setHours(currentHour + 1);
-        intervals.push(currentTime.toTimeString().split(' ')[0].slice(0, 5));
-        currentHour++;
-    }
-
-    return intervals;
-}
-
-function getTenMinuteIntervalsUntil10PM() {
-    const intervals = [];
-    const now = new Date();
-    const endTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 22, 0); // 10 PM
+    const endTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), targetHour, targetMinute);
 
     let currentTime = new Date(now.getTime());
 
     while (currentTime < endTime) {
-        currentTime.setMinutes(currentTime.getMinutes() + 5);
+        currentTime.setHours(currentTime.getHours() + intervalHours);
+        currentTime.setMinutes(currentTime.getMinutes() + intervalMinutes);
         if (currentTime <= endTime) {
             intervals.push(currentTime.toTimeString().split(' ')[0].slice(0, 5));
         }

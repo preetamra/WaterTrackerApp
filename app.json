@@ -34,7 +34,22 @@
       }
     },
     "plugins": [
-      "expo-font"
+      [
+        "expo-font",
+        {
+          "fonts": [
+            "./assets/fonts//Mplus-Black.ttf",
+            "./assets/fonts//Mplus-Bold.ttf",
+            "./assets/fonts//Mplus-ExtraBold.ttf",
+            "./assets/fonts//Mplus-Light.ttf",
+            "./assets/fonts//Mplus-Medium.ttf",
+            "./assets/fonts//Mplus-Regular.ttf",
+            "./assets/fonts//Mplus-Thin.ttf",
+            "./assets/fonts/CoreSans-ExtraBold.ttf",
+            "./assets/fonts/Fact-Narrow-Bold.ttf"
+        ]
+        }
+      ]
     ]
   }
 }

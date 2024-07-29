@@ -1,11 +1,12 @@
 import * as React from "react"
 import Svg, { Path } from "react-native-svg"
+import { horizontalScale, verticalScale } from "../Utils/ResponsiveDesign";
 const GlassOfWaterSvg = (props) => (
   <Svg
     xmlns="http://www.w3.org/2000/svg"
     xmlSpace="preserve"
-    width={40}
-    height={40}
+    width={horizontalScale(40)}
+    height={verticalScale(40)}
     viewBox="0 0 512 512"
     {...props}
   >

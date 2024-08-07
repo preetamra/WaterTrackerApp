@@ -274,6 +274,9 @@ function SettingScreen(props) {
               </View>
             </Pressable>
             <Pressable
+            onPress={() => {
+              props.navigation.navigate('EditCustomDrinkListScreen');
+            }}
             style={{
               width:"100%",
               flex:1,

@@ -3,6 +3,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import React, { useEffect, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import 'react-native-gesture-handler';
 
 import HomeScreen from '../screens/HomeScreen';
 import AddWaterScreen from '../screens/AddWaterScreen';
@@ -10,20 +11,13 @@ import CalenderScreen from '../screens/CalenderScreen';
 import SettingScreen from '../screens/SettingScreen';
 import RemainderScreen from '../screens/RemainderScreen';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import Test from '../screens/TestAnimation';
+import AddCustomDrinkScreen from '../screens/AddCustomDrinkScreen';
+import EditDrinkList from '../screens/EditDrinkList';
 
 const Stack = createNativeStackNavigator();
 
 export default function HomeScreenNavigation() {
-
-  const [initialRouteName, setInitialRouteName] = useState(null);
-
-  useEffect(() => {
-  }, []);
-
-  /* if (initialRouteName === null) {
-    // You can return a loading screen or null until initialRouteName is set
-    return null;
-  } */
 
   return (
     <SafeAreaView
@@ -60,6 +54,14 @@ export default function HomeScreenNavigation() {
         <Stack.Screen
         name="RemainderScreen"
         component={RemainderScreen}
+        />
+        <Stack.Screen
+        name='CustomDrinkScreen'
+        component={AddCustomDrinkScreen}
+        />
+        <Stack.Screen
+        name='EditCustomDrinkListScreen'
+        component={EditDrinkList}
         />
       </Stack.Navigator>
     </SafeAreaView>

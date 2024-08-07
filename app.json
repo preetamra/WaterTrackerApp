@@ -47,9 +47,10 @@
             "./assets/fonts//Mplus-Thin.ttf",
             "./assets/fonts/CoreSans-ExtraBold.ttf",
             "./assets/fonts/Fact-Narrow-Bold.ttf"
-        ]
+          ]
         }
-      ]
+      ],
+      "expo-asset"
     ]
   }
 }

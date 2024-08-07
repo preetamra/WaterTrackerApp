@@ -25,7 +25,13 @@ import React, {
     SharedTransition,
     runOnJS,
   } from 'react-native-reanimated';
-  import { Gesture, GestureDetector, GestureHandlerRootView, useCode, call} from 'react-native-gesture-handler';
+import {
+    Gesture,
+    GestureDetector,
+    GestureHandlerRootView,
+    useCode,
+    call
+} from 'react-native-gesture-handler';
   import {
     BottomSheetModal,
     BottomSheetView,
@@ -53,15 +59,15 @@ import React, {
   
 function AddWaterScreen(props) {
     const [loaded, error] = useFonts({
-        "Mplus-Black": require("../../assets/fonts//Mplus-Black.ttf"),
-        "Mplus-Bold": require("../../assets/fonts//Mplus-Bold.ttf"),
-        "Mplus-ExtraBold": require("../../assets/fonts//Mplus-ExtraBold.ttf"),
-        "Mplus-Light": require("../../assets/fonts//Mplus-Light.ttf"),
-        "Mplus-Medium": require("../../assets/fonts//Mplus-Medium.ttf"),
-        "Mplus-Regular": require("../../assets/fonts//Mplus-Regular.ttf"),
-        "Mplus-Thin": require("../../assets/fonts//Mplus-Thin.ttf"),
-        "CoreSans-ExtraBold": require("../../assets/fonts//CoreSans-ExtraBold.ttf"),
-        "Fact-Narrow-Bold": require("../../assets/fonts//Fact-Narrow-Bold.ttf")
+      "Mplus-Black": require("../../assets/fonts//Mplus-Black.ttf"),
+      "Mplus-Bold": require("../../assets/fonts//Mplus-Bold.ttf"),
+      "Mplus-ExtraBold": require("../../assets/fonts//Mplus-ExtraBold.ttf"),
+      "Mplus-Light": require("../../assets/fonts//Mplus-Light.ttf"),
+      "Mplus-Medium": require("../../assets/fonts//Mplus-Medium.ttf"),
+      "Mplus-Regular": require("../../assets/fonts//Mplus-Regular.ttf"),
+      "Mplus-Thin": require("../../assets/fonts//Mplus-Thin.ttf"),
+      "CoreSans-ExtraBold": require("../../assets/fonts//CoreSans-ExtraBold.ttf"),
+      "Fact-Narrow-Bold": require("../../assets/fonts//Fact-Narrow-Bold.ttf")
     });
 
     const riveRef = useRef(null);
@@ -102,9 +108,9 @@ function AddWaterScreen(props) {
     });
   
     const animatedTextProps = useAnimatedProps(() => {
-        return {
-          text: animatedText.value,
-        };
+      return {
+        text: animatedText.value,
+      };
     });
   
     const handlePresentModalPress = useCallback(() => {
@@ -114,56 +120,33 @@ function AddWaterScreen(props) {
     const handleSheetChanges = useCallback((index) => {
       console.log('handleSheetChanges', index);
       if(index == 1)
-        {
-          setBottomSheetBackDrop(true);
-        }else if(index == -1)
-        {
-           setBottomSheetBackDrop(false);
-        }
+      {
+        setBottomSheetBackDrop(true);
+      }else if(index == -1)
+      {
+        setBottomSheetBackDrop(false);
+      }
     }, []);
-  
-      const pan = Gesture.Pan()
-          .onUpdate((e) => {
-            // height.value = Math.max(0, Math.min(300, height.value - e.translationY));
-            // e.translationY = 0; // Reset translation to avoid cumulative issues
-          })
-          .onBegin((e) => {
-            console.log('Gesture started',e.translationY);
-            console.log('Touches Start',e);
-          }).onTouchesMove((e) => {
-            let val = e.allTouches[0].y;
-            if(!isBottleSelected)
-            {
-                if(val > 120 && val < 420){
-                    height.value = e.allTouches[0].y;      
-                    runOnJS(riveRef?.current?.setInputState)("State Machine 1", "Number 1", interpolate(val, [420,120], [0, 100], Extrapolation.CLAMP));
-                }
-            }else{
-                if(val > 200 && val < 480){
-                    height.value = e.allTouches[0].y;
-                    runOnJS(riveRef?.current?.setInputState)("Progress", "Number 1", interpolate(val, [480,200], [0, 100], Extrapolation.CLAMP));
-                }
-            }
-          });
 
-          if (!loaded && !error) {
-            return null;
-          }
+    if (!loaded && !error) {
+      return null;
+    }
   
-      return (
-        <GestureHandlerRootView style={{ flex: 1 }}>
-            <BottomSheetModalProvider>
-              <SafeAreaView
-              style={{
-                  flex: 1,
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  backgroundColor: 'white',
-                  marginTop: verticalScale(20),
-                }}>
-                {
-                  bottomSheetBackDrop && (
-                    <View style={{
+    return (
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        <BottomSheetModalProvider>
+          <SafeAreaView
+            style={{
+              flex: 1,
+              justifyContent: 'center',
+              alignItems: 'center',
+              backgroundColor: 'white',
+              marginTop: verticalScale(20),
+            }}>
+              {
+                bottomSheetBackDrop && (
+                  <View 
+                    style={{
                       position: 'absolute',
                       top:verticalScale(0),
                       bottom:0,
@@ -171,27 +154,29 @@ function AddWaterScreen(props) {
                       right:horizontalScale(0),
                       backgroundColor: 'rgba(0,0,0,0.5)',
                       zIndex: 1,
-                     }}>
-                    </View>
-                  )
-                }
-                  <View
-                    style={{
-                      flex: 1,
-                      justifyContent: 'space-between',
-                      alignItems: 'center',
-                      flexDirection: 'row',
-                      width: "100%",
-                      height: "100%",
-                    }}
-                  >
-                    <Text>
-                    </Text>
-                    <Pressable
+                    }}>
+                  </View>
+                )
+              }
+                <View
+                  style={{
+                    flex: 1,
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    flexDirection: 'row',
+                    width: "100%",
+                    height: "100%",
+                  }}
+                >
+                  <Text>
+                  </Text>
+                  <Pressable
                     onPress={() => {
                     //   props.navigation.navigate('HomeScreen');
-                    console.log('Back Pressed',props);
+                    // console.log('Back Pressed',props);
+                    // runOnJS(props.navigation.goBack)();
                     props.navigation.goBack();
+                    // props.setState(false);
                     }}
                     style={{
                       padding: 10,
@@ -203,23 +188,23 @@ function AddWaterScreen(props) {
                      <Image
                      source={require('../assets/closeButton.png')}
                      style={{
-                        width: horizontalScale(30),
-                        height: verticalScale(50),
-                        resizeMode: 'center',
-                        transform: [{ scale: 1.5 }],
-                      }}
+                      width: horizontalScale(30),
+                      height: verticalScale(50),
+                      resizeMode: 'center',
+                      transform: [{ scale: 1.5 }],
+                     }}
                      ></Image>
                     </Pressable>
                   </View>
                   <View
-                      style={{
-                          flex: 6,
-                          position: "relative",
-                          width: "100%",
-                          justifyContent: 'center',
-                          alignItems: 'center',
-                          height: "100%",
-                      }}
+                    style={{
+                      flex: 6,
+                      position: "relative",
+                      width: "100%",
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      height: "100%",
+                    }}
                   >
                     {
                         isBottleSelected ?
@@ -228,11 +213,11 @@ function AddWaterScreen(props) {
                         artboardName="Artboard"
                         stateMachineName='Progress'
                         style={
-                            {
-                                width: horizontalScale(250),
-                                height: verticalScale(250),
-                                marginBottom: verticalScale(-120),
-                            }
+                          {
+                            width: horizontalScale(250),
+                            height: verticalScale(250),
+                            marginBottom: verticalScale(-120),
+                          }
                         }
                         ref={riveRef}
                        /> :
@@ -250,17 +235,35 @@ function AddWaterScreen(props) {
                         ref={riveRef}
                        />
                     }
-                    <GestureDetector gesture={pan}>
                     <View
                      style={{
                       width: "70%",
                       height: "100%",
                       position: 'absolute',
                       zIndex:3,
+                      opacity:0.5,
+                    }}
+                    onStartShouldSetResponder={() => true}
+                    onResponderMove={(e) => {
+                      let val = e.nativeEvent.locationY;
+
+                      console.log("val :- ",val);
+
+                      if(!isBottleSelected)
+                      {
+                        if(val > 120 && val < 420){
+                          height.value = val;
+                          runOnJS(riveRef?.current?.setInputState)("State Machine 1", "Number 1", interpolate(val, [420,120], [0, 100], Extrapolation.CLAMP));
+                        }
+                      }else{
+                        if(val > 200 && val < 480){
+                          height.value = val;
+                          runOnJS(riveRef?.current?.setInputState)("Progress", "Number 1", interpolate(val, [480,200], [0, 100], Extrapolation.CLAMP));
+                        }
+                      }
                     }}
                     >
                     </View>
-                    </GestureDetector>
                   </View>
                   <View
                   style={{
@@ -338,7 +341,6 @@ function AddWaterScreen(props) {
                             marginHorizontal: horizontalScale(40),
                           }}
                           onPress={() => {
-                              // props.navigation.navigate('HomeScreen'); // Assuming 'HomeScreen' is the correct navigation target
                               (
                                 async () => {
                                   try{
@@ -363,7 +365,7 @@ function AddWaterScreen(props) {
                                       $intValue: Math.round(interpolate(height.value, [0, 300], [isBottleSelected ? 1000 : 300, 0], Extrapolation.CLAMP)),
                                       $dateTime: new Date().toISOString()
                                     });
-                                    
+
                                     const today = new Date().toISOString().split('T')[0];
                                     const startOfDay = `${today}T00:00:00.000Z`;
                                     const endOfDay = `${today}T23:59:59.999Z`;
@@ -394,10 +396,12 @@ function AddWaterScreen(props) {
                                     }
   
                                     const allRows = await db.getAllAsync('SELECT * FROM test');
-  
+
                                     for (const row of allRows) {
                                       console.log(row.id, row.value, row.intValue);
                                     }
+
+                                     console.log("props :- ",props.switchScreen());
                                   }catch(e){
                                     console.error(e);
                                   }

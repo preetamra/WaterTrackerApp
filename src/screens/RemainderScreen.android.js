@@ -30,12 +30,28 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import ScrollPicker from "react-native-wheel-scrollview-picker";
 import Haptics from 'expo-haptics';
-
-import { scheduleAllNotification } from '../Utils/NotificationSchedule';
-import { horizontalScale, moderateScale, verticalScale } from '../Utils/ResponsiveDesign';
-import IosLikeSpinner from '../Components/IosLikeSpinner';
+import GridLayout from "@ogzhnaydn/react-native-grid-layout";
 import { TimerPickerModal } from 'react-native-timer-picker';
 import { LinearGradient } from 'react-native-svg';
+import * as BackgroundFetch from 'expo-background-fetch';
+import * as TaskManager from 'expo-task-manager';
+
+import { scheduleAllNotification, cancellAllNotification, scheduleNotificationAtTime } from '../Utils/NotificationSchedule';
+import { horizontalScale, moderateScale, verticalScale } from '../Utils/ResponsiveDesign';
+import convertTo12Hour from '../Utils/TimeUtills';
+
+const BACKGROUND_FETCH_TASK = 'background-fetch';
+
+console.log("Registering background fetch task",new Date().toLocaleString());
+
+TaskManager.defineTask(BACKGROUND_FETCH_TASK, async () => {
+  const now = Date.now();
+
+  console.log(`Got background fetch call at date: ${new Date(now).toISOString()}`);
+
+  // Be sure to return the successful result type!
+  return BackgroundFetch.BackgroundFetchResult.NewData;
+});
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -56,25 +72,111 @@ async function schedulePushNotification(remaining) {
   });
 }
 
+async function unregisterBackgroundFetchAsync() {
+  try{
+    return BackgroundFetch.unregisterTaskAsync(BACKGROUND_FETCH_TASK);
+  }catch(e){
+    console.log(e);
+  }
+}
+
+const Item = (props) => {
+  return <View style={
+    [
+      styles.item,
+      props.isEnabled && {
+        backgroundColor: '#EFFDFE',
+      }
+    ]
+    }>
+    <Text
+    style={[
+      props.isEnabled ?
+      {
+        color:'#495056',
+        fontSize:moderateScale(20),
+      }:
+      {
+        color:'#BCC8CC',
+        fontSize:moderateScale(20),
+      }
+    ]}
+    >
+      {
+        props.time
+      }
+    </Text>
+    <Switch
+    value={props.isEnabled}
+    onValueChange={(value) => {
+      if(value)
+      {
+        props.onEnable();
+      }else{
+        props.onDisable();
+      }
+    }}
+    ></Switch>
+  </View>;
+};
+
 function RemainderScreen(props) {
   const [isEnabled, setIsEnabled] = useState(false);
   const toggleSwitch = (value) => {
     setIsEnabled(previousState => !previousState);
     if(value)
     {
-      scheduleAllNotification(sliderValue,sliderMinValue*5);
+      console.log("Value :- ",value);
+      scheduleAllNotification(sliderValue,sliderMinValue*5,alarmString1?.split(":")[0],alarmString1?.split(":")[1]);
+    }else{
+      console.log("Value :- ",value);
+      cancellAllNotification();
     }
+    const storeData = async (value) => {
+      try {
+        await AsyncStorage.setItem('remainderValue', value+"");
+      } catch (e) {
+        // saving error
+        console.log(e);
+      }
+    };
+
+    storeData(value);
   };
 
   const [sliderValue, setSliderValue] = useState(1);
   const onSliderValueChange = (value) => {
     setSliderValue(value);
+
+    const storeData = async (value) => {
+      try {
+        await AsyncStorage.setItem('hoursValue', value+"");
+      } catch (e) {
+        // saving error
+        console.log(e);
+      }
+    };
+
+    storeData(value);
   }
 
   const [sliderMinValue, setSliderMinValue] = useState(1);
   const onSliderMinValueChange = (value) => {
     setSliderMinValue(value);
+
+    const storeData = async (value) => {
+      try {
+        await AsyncStorage.setItem('minssValue', value+"");
+      } catch (e) {
+        // saving error
+        console.log(e);
+      }
+    };
+
+    storeData(value);
   }
+
+  const [customTimer, setCustomTimer] = useState([]);
 
   const [selectedTab, setSelectedTab] = useState(0);
   const [bottomSheetBackDrop, setBottomSheetBackDrop] = useState(false);
@@ -102,11 +204,6 @@ function RemainderScreen(props) {
     }
   }, []);
 
-  const onChange = (event, selectedDate) => {
-    const currentDate = selectedDate;
-    setDate(currentDate);
-  };
-
   const formatTime = ({
     hours,
     minutes,
@@ -125,6 +222,254 @@ function RemainderScreen(props) {
     }
 
     return timeParts.join(":");
+  };
+
+  useEffect(() => {
+    const getData = async () => {
+      try {
+        const value = await AsyncStorage.getItem('remainderValue');
+        if (value !== null) {
+          if(value == "true")
+          {
+            setIsEnabled(true);
+          }else{
+            setIsEnabled(false);
+          }
+        }
+      } catch (e) {
+        console.log(e);
+      }
+    };
+
+    getData();
+
+    const getFromTime = async () => {
+      try {
+        const value = await AsyncStorage.getItem('fromTime');
+        if (value !== null) {
+          setAlarmString(value);
+        }
+      } catch (e) {
+        console.log(e);
+      }
+    }
+
+    getFromTime();
+
+    const getToTime = async () => {
+      try {
+        const value = await AsyncStorage.getItem('toTime');
+        if (value !== null) {
+          setAlarmString1(value);
+        }
+      } catch (e) {
+        console.log(e);
+      }
+    }
+
+    getToTime();
+
+    const getHoursValue = async () => {
+      try {
+        const value = await AsyncStorage.getItem('hoursValue');
+        if (value !== null) {
+          setSliderValue(parseInt(value));
+        }
+      } catch (e) {
+        console.log(e);
+      }
+    }
+
+    getHoursValue();
+
+    const getMinsValue = async () => {
+      try {
+        const value = await AsyncStorage.getItem('minssValue');
+        if (value !== null) {
+          setSliderMinValue(parseInt(value));
+        }
+      } catch (e) {
+        console.log(e);
+      }
+    }
+
+    getMinsValue();
+  },[]);
+
+  useEffect(() => {
+    const getCustomTimer = async () => {
+      try {
+        const value = await AsyncStorage.getItem('customTimerValue');
+        if (value !== null) {
+          setCustomTimer(JSON.parse(value));
+        }else{
+          const storeData = async (value) => {
+            try {
+              let customTimers = [
+                {
+                  time: "8:00 AM",
+                  isEnabled: false,
+                  id:""
+                },
+                {
+                  time: "8:30 AM",
+                  isEnabled: false,
+                  id:""
+                },
+                {
+                  time: "9:00 AM",
+                  isEnabled: false,
+                  id:""
+                },
+                {
+                  time: "9:30 AM",
+                  isEnabled: false,
+                  id:""
+                },
+                {
+                  time: "10:00 AM",
+                  isEnabled: false,
+                  id:""
+                },
+                {
+                  time: "10:30 AM",
+                  isEnabled: false,
+                  id:""
+                },
+                {
+                  time: "11:00 AM",
+                  isEnabled: false,
+                  id:""
+                },
+                {
+                  time: "11:30 AM",
+                  isEnabled: false,
+                  id:""
+                },
+                {
+                  time: "12:00 PM",
+                  isEnabled: false,
+                  id:""
+                },
+                {
+                  time: "12:30 PM",
+                  isEnabled: false,
+                  id:""
+                },
+                {
+                  time: "1:00 PM",
+                  isEnabled: false,
+                  id:""
+                },
+                {
+                  time: "1:30 PM",
+                  isEnabled: false,
+                  id:""
+                },
+                {
+                  time: "2:00 PM",
+                  isEnabled: false,
+                  id:""
+                },
+                {
+                  time: "2:30 PM",
+                  isEnabled: false,
+                  id:""
+                },
+                {
+                  time: "3:00 PM",
+                  isEnabled: false,
+                  id:""
+                },
+                {
+                  time: "3:30 PM",
+                  isEnabled: false,
+                  id:""
+                },
+                {
+                  time: "4:00 PM",
+                  isEnabled: false,
+                  id:""
+                },
+                {
+                  time: "4:30 PM",
+                  isEnabled: false,
+                  id:""
+                },
+                {
+                  time: "5:00 PM",
+                  isEnabled: false,
+                  id:""
+                },
+                {
+                  time: "5:30 PM",
+                  isEnabled: false,
+                  id:""
+                },
+                {
+                  time: "6:00 PM",
+                  isEnabled: false,
+                  id:""
+                },
+                { 
+                  time: "6:30 PM",
+                  isEnabled: false,
+                  id:""
+                },
+                {
+                  time: "7:00 PM",
+                  isEnabled: false,
+                  id:""
+                },
+                {
+                  time: "7:30 PM",
+                  isEnabled: false,
+                  id:""
+                },
+                {
+                  time: "8:00 PM",
+                  isEnabled: false,
+                  id:""
+                }
+              ]
+
+              await AsyncStorage.setItem('customTimerValue', JSON.stringify(customTimers));
+              setCustomTimer(customTimers);
+            } catch (e) {
+              console.log(e);
+            }
+          };
+
+          storeData(customTimer);
+        }
+      } catch (e) {
+        console.log(e);
+      }
+    }
+
+    getCustomTimer();    
+  },[])
+
+  const [isRegistered, setIsRegistered] = React.useState(false);
+  const [status, setStatus] = React.useState(null);
+
+  React.useEffect(() => {
+    checkStatusAsync();
+  }, []);
+
+  const checkStatusAsync = async () => {
+    try{
+      const status = await BackgroundFetch.getStatusAsync();
+      const isRegistered = await TaskManager.isTaskRegisteredAsync(BACKGROUND_FETCH_TASK);
+  
+      console.log('BackgroundFetch status:', status);
+      console.log('TaskManager status:', isRegistered);
+
+      setStatus(status);
+      setIsRegistered(isRegistered);
+    }catch(e){
+      console.log(e);
+    }
   };
 
     return (
@@ -727,7 +1072,9 @@ function RemainderScreen(props) {
                         fontWeight: 'bold',
                       }}
                       >
-                        8:00 AM
+                        {
+                          convertTo12Hour(alarmString)
+                        }
                       </Text>
                     </View>
                   </Pressable>
@@ -766,7 +1113,9 @@ function RemainderScreen(props) {
                         fontWeight: 'bold',
                       }}
                       >
-                        10:00 PM
+                        {
+                          convertTo12Hour(alarmString1)
+                        }
                       </Text>
                     </View>
                   </Pressable>
@@ -835,7 +1184,6 @@ function RemainderScreen(props) {
                     width: '100%',
                     justifyContent: 'center',
                     alignItems: 'center',
-                    paddingHorizontal: horizontalScale(20),
                     position: 'relative',
                     marginTop: verticalScale(20),
                   }}
@@ -843,138 +1191,53 @@ function RemainderScreen(props) {
                   </View>
                   
                   <View
-                  style={{
-                    flex: 1,
-                    width: '100%',
-                    paddingHorizontal: horizontalScale(20),
-                  }}
+                  style={styles.app}
                   >
-                    <View
-                    style={styles.TimerMainContainer}
-                    >
-                      <View style={
-                        [
-                          styles.TimerContainer,
-                          {
-                            backgroundColor:"#eefcfd"
+                  {
+                    customTimer.map((item,index) => {
+                      return <Item
+                      onEnable={() => {
+                        (
+                          async () => {
+                            try{
+                              let item1 = await scheduleNotificationAtTime(item.time, "It's time to drink water");
+      
+                              let temp = [...customTimer];
+                              temp[index].isEnabled = true;
+                              setCustomTimer(temp);
+                              (
+                                async () => {
+                                  try{
+                                    await AsyncStorage.setItem('customTimerValue', JSON.stringify(temp));
+                                  }catch(e){
+                                    console.log(e);
+                                  }
+                                }
+                              )()
+                            }catch(e){
+                              console.log(e);
+                            }
                           }
-                        ]
-                      }>
-                        <Text
-                        style={
-                          [
-                            styles.TimeText1,
-                          ]}
-                        >8:00 AM</Text>
-                        <Switch
-                          trackColor={{false: '#f9fbfa', true: '#00bed8'}}
-                          thumbColor={isEnabled ? 'white' : '#f4f3f4'}
-                          ios_backgroundColor="#f9fbfa"
-                          onValueChange={toggleSwitch}
-                          value={isEnabled}
-                          style={{
-                            transform: [{
-                              scale:0.8
-                            }]
-                          }}
-                        />
-                      </View>
-                      <View style={styles.TimerContainer}>
-                        <Text
-                        style={styles.TimeText1}
-                        >8:00 AM</Text>
-                        <Switch
-                          trackColor={{false: '#f9fbfa', true: '#00bed8'}}
-                          thumbColor={isEnabled ? 'white' : '#f4f3f4'}
-                          ios_backgroundColor="#f9fbfa"
-                          onValueChange={toggleSwitch}
-                          value={isEnabled}
-                          style={{
-                            transform: [{
-                              scale:0.8
-                            }]
-                          }}
-                        />
-                      </View>
-                    </View>
-                    <View
-                    style={styles.TimerMainContainer}
-                    >
-                      <View style={styles.TimerContainer}>
-                        <Text>8:00 AM</Text>
-                        <Switch
-                          trackColor={{false: '#f9fbfa', true: '#00bed8'}}
-                          thumbColor={isEnabled ? 'white' : '#f4f3f4'}
-                          ios_backgroundColor="#f9fbfa"
-                          onValueChange={toggleSwitch}
-                          value={isEnabled}
-                          style={{
-                            transform: [{
-                              scale:0.8
-                            }]
-                          }}
-                        />
-                      </View>
-                      <View style={styles.TimerContainer}>
-                        <Text>8:00 AM</Text>
-                        <Switch
-                          trackColor={{false: '#f9fbfa', true: '#00bed8'}}
-                          thumbColor={isEnabled ? 'white' : '#f4f3f4'}
-                          ios_backgroundColor="#f9fbfa"
-                          onValueChange={toggleSwitch}
-                          value={isEnabled}
-                          style={{
-                            transform: [{
-                              scale:0.8
-                            }]
-                          }}
-                        />
-                      </View>
-                    </View>
-                    <View
-                    style={styles.TimerMainContainer}
-                    >
-                      <View style={styles.TimerContainer}>
-                        <Text>8:00 AM</Text>
-                        <Switch
-                          trackColor={{false: '#f9fbfa', true: '#00bed8'}}
-                          thumbColor={isEnabled ? 'white' : '#f4f3f4'}
-                          ios_backgroundColor="#f9fbfa"
-                          onValueChange={toggleSwitch}
-                          value={isEnabled}
-                          style={{
-                            transform: [{
-                              scale:0.8
-                            }]
-                          }}
-                        />
-                      </View>
-                      <View style={styles.TimerContainer}>
-                        <Text>8:00 AM</Text>
-                        <Switch
-                          trackColor={{false: '#f9fbfa', true: '#00bed8'}}
-                          thumbColor={isEnabled ? 'white' : '#f4f3f4'}
-                          ios_backgroundColor="#f9fbfa"
-                          onValueChange={toggleSwitch}
-                          value={isEnabled}
-                          style={{
-                            transform: [{
-                              scale:0.8
-                            }]
-                          }}
-                        />
-                      </View>
-                    </View>
-                    <View>
-                    </View>
-                    <View>
-                    </View>
-                    <View>
-                    </View>
-                    <View>
-                    </View>
-                    <View>
-                    </View>
+                        )()
+                      }}
+                      onDisable={() => {
+                        let temp = [...customTimer];
+                        temp[index].isEnabled = false;
+                        setCustomTimer(temp);
+                        (
+                          async () => {
+                            try{
+                              await AsyncStorage.setItem('customTimerValue', JSON.stringify(temp));
+                            }catch(e){
+                              console.log(e);
+                            }
+                          }
+                        )()
+                      }}
+                      time={item.time} 
+                      isEnabled={item.isEnabled} />
+                    })
+                  }
                   </View>
                   
                   <View
@@ -1025,6 +1288,30 @@ function RemainderScreen(props) {
           </View>
         )
       }
+      <Button
+      title='Check Status'
+      onPress={() => {
+        checkStatusAsync();
+      }}
+      ></Button>
+      <Button
+      title='Unregister Task'
+      onPress={() => {
+        unregisterBackgroundFetchAsync();
+      }}
+      ></Button>
+        <Text>
+          Background fetch status:{' '}
+          <Text style={styles.boldText}>
+            {status && BackgroundFetch.BackgroundFetchStatus[status]}
+          </Text>
+        </Text>
+        <Text>
+          Background fetch task name:{' '}
+          <Text style={styles.boldText}>
+            {isRegistered ? BACKGROUND_FETCH_TASK : 'Not registered yet!'}
+          </Text>
+        </Text>
         </View>
       </View>
       <BottomSheetModal
@@ -1072,6 +1359,14 @@ function RemainderScreen(props) {
             onConfirm={(pickedDuration) => {
                 setAlarmString(formatTime(pickedDuration));
                 setShowPicker(false);
+                const storeData = async (value) => {
+                  try {
+                    await AsyncStorage.setItem('fromTime', value);
+                  } catch (e) {
+                    // saving error
+                  }
+                };
+                storeData(formatTime(pickedDuration));
             }}
             modalTitle="Set Alarm"
             onCancel={() => setShowPicker(false)}
@@ -1156,6 +1451,15 @@ function RemainderScreen(props) {
             onConfirm={(pickedDuration) => {
                 setAlarmString1(formatTime(pickedDuration));
                 setShowPicker1(false);
+
+                const storeData = async (value) => {
+                  try {
+                    await AsyncStorage.setItem('toTime', value);
+                  } catch (e) {
+                    // saving error
+                  }
+                };
+                storeData(formatTime(pickedDuration));
             }}
             modalTitle="Set Alarm"
             onCancel={() => setShowPicker1(false)}
@@ -1223,6 +1527,27 @@ const styles = StyleSheet.create({
   TimeText1:{
     color:"#313a3f",
     fontSize:moderateScale(15.5),
+  },
+  app: {
+    marginHorizontal: "auto",
+    width: "100%",
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "center",
+    alignItems: "center",
+    gap: 10,
+  },
+  item: {
+    flex: 1,
+    minWidth: 150,
+    maxWidth: 150,
+    height: 60,
+    justifyContent: "space-between",
+    alignItems: "center",
+    padding: 10,
+    backgroundColor: "#f9fdfe",
+    flexDirection: "row",
+    borderRadius: 20,
   },
 })
   

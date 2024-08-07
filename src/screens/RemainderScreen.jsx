@@ -26,11 +26,19 @@ import {
   BottomSheetModalProvider,
   BottomSheetTextInput
 } from '@gorhom/bottom-sheet';
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { 
+  GestureHandlerRootView,
+} from 'react-native-gesture-handler';
 import DateTimePicker from '@react-native-community/datetimepicker';
 
-import { scheduleAllNotification } from '../Utils/NotificationSchedule';
-import { horizontalScale, moderateScale, verticalScale } from '../Utils/ResponsiveDesign';
+import {
+  scheduleAllNotification
+} from '../Utils/NotificationSchedule';
+import {
+  horizontalScale, 
+  moderateScale, 
+  verticalScale
+} from '../Utils/ResponsiveDesign';
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({

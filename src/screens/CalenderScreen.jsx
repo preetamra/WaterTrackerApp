@@ -7,22 +7,59 @@ import {
   SafeAreaView,
   View,
   Text,
-  FlatList
+  FlatList,
+  Pressable,
+  Image
 } from 'react-native';
 import { GestureHandlerRootView, ScrollView } from 'react-native-gesture-handler';
 import * as SQLite from 'expo-sqlite';
 import { CartesianChart, Line, Bar } from 'victory-native';
-import { FontWeight, LinearGradient, vec } from '@shopify/react-native-skia';
+import { FontWeight, LinearGradient, size, vec } from '@shopify/react-native-skia';
 import { BarChart } from 'react-native-gifted-charts';
 import { useSQLiteContext } from 'expo-sqlite';
 import { useFonts } from 'expo-font';
+import {
+  useDispatch
+} from 'react-redux';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import Calender from '../Components/Calendar';
 import Chart from '../Components/Charts';
 import { horizontalScale, moderateScale, verticalScale } from '../Utils/ResponsiveDesign';
-import { color, min } from 'd3';
+import { categoryActions } from '../store/categoriesSlice.js';
 
-function getWeekArray() {
+function toPercentageArray(arr) {
+  const total = arr.reduce((sum, num) => sum + num, 0);
+  
+  if (total === 0) {
+      return arr.map((_, index) => index === 0 ? 100 : 0);
+  }
+  
+  return arr.map(num => (num / total) * 100);
+}
+
+function getPreviousSixMonthsDates() {
+  const datesArray = [];
+  const today = new Date();
+
+  for (let i = 0; i < 6; i++) {
+    const start = new Date(today.getFullYear(), today.getMonth() - i, 1);
+    const end = new Date(today.getFullYear(), today.getMonth() - i + 1, 0);
+
+    datesArray.unshift({
+      start: start,
+      end: end
+    });
+  }
+
+  return datesArray;
+}
+
+function getWeekArray(type) {
+  // console.log('Type',type);
+  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  if(type == 'Days')
+  {
   // Array of days starting from Sunday
   const days = ["S", "M", "T", "W", "T", "F", "S"];
   
@@ -37,9 +74,39 @@ function getWeekArray() {
   }
   
   return weekArray;
+  }else if(type == 'Weeks')
+  {
+    const weeks = ["W1", "W2", "W3", "W4"];
+    const currentDate = new Date();
+    const weekArray = [];
+    for (let i = 0; i < 4; i++) {
+      let currDate = currentDate.getDate();
+      let tempText = '';
+      tempText = months[currentDate.getMonth()];
+      currentDate.setDate(currentDate.getDate() - 6);
+      tempText += (currentDate.getDate()+"-"+currDate);
+      weekArray.push(tempText);
+    }
+    return weekArray;
+  }else if(type == 'Months')
+    {
+      const currentDate = new Date();
+      const Localmonths = [];
+      for (let i=0; i<6; i++)
+      {
+        let tempText = '';
+        tempText = months[currentDate.getMonth()];
+        currentDate.setMonth(currentDate.getMonth()-1);
+
+        Localmonths.push(tempText);
+      }
+      return Localmonths;
+    }
 }
 
 function CalenderScreen(props) {
+
+  const dispatch = useDispatch();
 
   const [loaded, error] = useFonts({
     "Mplus-Black": require("../../assets/fonts//Mplus-Black.ttf"),
@@ -58,51 +125,13 @@ function CalenderScreen(props) {
   const [streak, setStreak] = useState(0);
   const [data, setData] = useState([]);
 
+  const [type, setType] = useState('Days');
+
   const [month, setMonth] = useState(8);
   const [year, setYear] = useState(2024);
 
   const [selectedDate, setSelectedDate] = useState(new Date());
-
-  const calculateStreak = (data) => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0); // Normalize to start of the day
-
-    let currentStreak = 0;
-
-    // Iterate backwards through the data, starting from today
-    for (let i = data.length - 1; i >= 0; i--) {
-      const entryDate = new Date(data[i].value);
-      entryDate.setHours(0, 0, 0, 0); // Normalize to start of the day
-
-      // If the entry date is today, streak continues
-      if (entryDate.getTime() === today.getTime()) {
-        currentStreak++;
-        today.setDate(today.getDate() - 1); // Move to the previous day
-      } else {
-        break; // Streak is broken
-      }
-    }
-
-    return currentStreak;
-  };
-
-  useEffect(() => {
-     (
-      async() => {
-        try{
-          const db = await SQLite.openDatabaseAsync('databaseName');
-
-          const allRows = await db.getAllAsync('SELECT * FROM test');
-          
-          const calculatedStreak = calculateStreak(allRows);
-          
-          setStreak(calculatedStreak);
-        }catch(error){
-          console.log('Error in CalenderScreen',error);
-        }
-      }
-     )()
-  },[]);
+  const [selectedDateData,setSelectedDateData] = useState([]);
 
   useEffect(() => {
      (
@@ -110,12 +139,124 @@ function CalenderScreen(props) {
         try{
           let temp = [];
 
-          getWeekArray().forEach((day, index) => {
-            temp.push({
-              label: day,
-              value: Math.floor(Math.random() * 100)
+          if(type == 'Days')
+          {
+            const startDate = new Date();
+            startDate.setDate(startDate.getDate() - 6); // Set start of today
+
+            const endDate = new Date();
+
+            // console.log('Start Date',startDate);
+            // console.log('End Date',endDate);
+
+            const value = await db.getAllAsync('SELECT * FROM Transactions WHERE dateTime BETWEEN ? AND ?', [startDate.toISOString(), endDate.toISOString()]);
+
+            // console.log('Value',value);
+
+            const valuesArray = [0,0,0,0,0,0,0];
+
+            let tempObj = {};
+
+            value.forEach((item) => {
+              let date = new Date(item.dateTime).toISOString().split('T')[0];              
+              tempObj[date] = tempObj[date] ? tempObj[date] + item.size : item.size;
             });
-          });
+
+            // console.log('TempObj',tempObj);
+
+            for (const [key, value] of Object.entries(tempObj)) {
+              // console.log(`${key}: ${value}`);
+              let date = new Date();
+              let compareDate = new Date(key);
+              for(let i=0; i<7; i++)
+              {
+                 date.setDate(date.getDate() - i);
+                //  console.log('Date',date.toISOString().split('T')[0]);
+                if(date.toISOString().split('T')[0] == compareDate.toISOString().split('T')[0])
+                {
+                  valuesArray[i] = value;
+                }
+              }
+            }
+
+            // console.log('Values Array',valuesArray);
+
+            let outputArray = toPercentageArray(valuesArray);
+            getWeekArray(type).forEach((day,index) => {
+              temp.push({
+                label: day,
+                value: Math.floor(outputArray[index]),
+                size: valuesArray[index]
+              });
+            });
+          }else if(type == 'Weeks')
+          {
+            let from = new Date();
+            let value = [0,0,0,0];
+            for(let i=1; i<5; i++)
+            {
+              let to = new Date();
+              to.setDate(from.getDate() - 6);
+              const valueDB = await db.getAllAsync('SELECT * FROM Transactions WHERE dateTime BETWEEN ? AND ?', [to.toISOString(), from.toISOString()]);
+              let count = valueDB.reduce((acc,item) => {
+                acc += item.size;
+                return acc;
+              },0);
+              value[i-1] = count;
+              from = to;
+            }
+            // console.log('Value',value);
+
+            let outputArray = toPercentageArray(value);
+
+            // console.log('Output Array',outputArray);
+            getWeekArray(type).forEach((day,index) => {
+              temp.push({
+                label: day,
+                value: Math.floor(outputArray[index]),
+                size: value[index]
+              });
+            });
+          }else if(type == 'Months')
+          {
+            let from = new Date();
+            let value = [0,0,0,0,0,0];
+
+            let datesObjArr = getPreviousSixMonthsDates();
+
+            // console.log(datesObjArr);
+
+            for(let i=0; i<datesObjArr.length; i++)
+            {
+              // console.log("------ START ------");
+              // console.log('Dates',datesObjArr[i]);
+              let valuesDB = await db.getAllAsync('SELECT * FROM Transactions WHERE dateTime BETWEEN ? AND ?', [datesObjArr[i].start.toISOString(), datesObjArr[i].end.toISOString()]);
+              // console.log('Values DB',valuesDB);
+              let count = valuesDB.reduce((acc,curr) => {
+                acc += curr.size;
+                return acc
+              },0);
+              // console.log("Count :- ",count);
+              // console.log("i :- ",i);
+              value[i] = count;
+              // console.log("------ END ------");
+            }
+
+            // console.log('Value Month',value);
+            
+            value.reverse();
+
+            let outputArray = toPercentageArray(value);
+
+            // console.log('Output Array',outputArray);
+            getWeekArray(type).forEach((day,index) => {
+              temp.push({
+                label: day,
+                value: Math.floor(outputArray[index]),
+                size: value[index]
+              });
+            });
+          }
 
           temp.reverse();
           setData(temp);
@@ -124,7 +265,104 @@ function CalenderScreen(props) {
         }
       }
      )()
+  },[type]);
+
+  const getDataTransactions = async () => {
+    try {
+      const startDate = new Date();
+      startDate.setHours(0, 0, 0, 0); // Set start of today
+
+      const endDate = new Date();
+      endDate.setHours(23, 59, 59, 999); // Set end of today
+
+      const value = await db.getAllAsync('SELECT * FROM Transactions WHERE dateTime BETWEEN ? AND ?', [startDate.toISOString(), endDate.toISOString()]);
+
+      dispatch(categoryActions.todaysTransactions(value));
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
+  useEffect(() => {
+    (
+      async() => {
+        try{
+          await getDataTransactions();
+
+          let item = await AsyncStorage.getItem("STREAKDATA");
+          // console.log('Item',item);
+          if(item != null)
+          {
+            setStreak(parseInt(item));
+          }else{
+            setStreak(1);
+          }
+        }catch(error){
+          console.log('Error in CalenderScreen',error);
+        }
+      }
+    )()
   },[]);
+
+  useEffect(() => {
+    // console.log("Selected Date :- ",selectedDate);
+    const selectedDateLocalStart = new Date(selectedDate);
+    const selectedDateLocalEnd = new Date(selectedDate);
+    selectedDateLocalStart.setHours(0,0,0,0);
+    selectedDateLocalEnd.setHours(23,59,59,59);
+    // console.log("selectedDateLocalStart :- ",selectedDateLocalStart);
+    // console.log("selectedDateLocalEnd :- ",selectedDateLocalEnd);
+    (
+      async() => {
+        try{
+          const valueDB = await db.getAllAsync('SELECT * FROM Transactions WHERE dateTime BETWEEN ? AND ?',[selectedDateLocalStart.toISOString(),selectedDateLocalEnd.toISOString()]);
+          //Dont touch this code editing this is a nightmare
+          const objData = valueDB.map((val,index) => {
+            console.log('Val',val);
+            return{
+              key:index,
+              title:val.category_id,
+              value:val.size,
+              time:new Date(val.dateTime).toLocaleTimeString()
+            }
+          })
+
+          //Dont touch this code editing this is a nightmare
+          console.log("ObjData :- ",objData);
+
+          (
+            async() => {
+              try{
+                 for(let i=0; i<objData.length; i++)
+                 {
+                  let item = await db.getAllAsync('SELECT * FROM Categories WHERE id = ?',[objData[i].title]);
+                  let tempTime = objData[i].time;
+                  let formattedTime = tempTime.slice(0, -6) + tempTime.slice(-3);
+                  objData[i].time = formattedTime;
+                  objData[i].title = item[0].name;
+                 }
+
+                 console.log("ObjData :- ",objData);
+
+                 setSelectedDateData(objData);
+              }catch(e)
+              {
+                console.log(e);
+              }
+            }
+          )()
+
+          // console.log("Mapped DB :- ",mapedData);
+
+          // setSelectedDateData(mapedData);
+          
+        }catch(e)
+        {
+          console.log(e);
+        }
+      }
+    )()
+  },[selectedDate]);
 
     return (
       <GestureHandlerRootView
@@ -213,7 +451,9 @@ function CalenderScreen(props) {
                  color:'#E8FBFB'
                }}
                >
-                1
+                {
+                  streak
+                }
                </Text>
                <Text
                style={{
@@ -251,15 +491,94 @@ function CalenderScreen(props) {
               flex:1,
             }}
             >
-              <Text>
-                Days
-              </Text>
-              <Text>
-                Weeks
-              </Text>
-              <Text>
-                Months
-              </Text>
+              <Pressable
+              onPress={() => {
+                setType('Days');
+              }}
+              style={
+                [
+                  {
+                    backgroundColor:'#EFF1F2',
+                    padding:moderateScale(10),
+                    borderRadius:moderateScale(20),
+                  },
+                  type == 'Days' ? {
+                    backgroundColor:'#253241',
+                  } : {}
+                ]}
+              >
+                <Text
+                style={{
+                  color:'#CAD4DC',
+                  fontSize:moderateScale(16.5),
+                  fontFamily: "Mplus-Bold",
+                }}
+                >Days</Text>
+              </Pressable>
+              <Pressable
+              onPress={() => {
+                setType('Weeks');
+              }}
+              style={
+                [
+                  {
+                    backgroundColor:'#EFF1F2',
+                    padding:moderateScale(10),
+                    borderRadius:moderateScale(20),
+                  },
+                  type == 'Weeks' ? {
+                    backgroundColor:'#253241',
+                  } : {}
+                ]}
+              >
+                <Text
+                style={{
+                  color:'#CAD4DC',
+                  fontSize:moderateScale(16.5),
+                  fontFamily: "Mplus-Bold",
+                }}
+                >Weeks</Text>
+              </Pressable>
+              <Pressable
+              onPress={() => {
+                setType('Months');
+              }}
+              style={
+                [
+                  {
+                    backgroundColor:'#EFF1F2',
+                    padding:moderateScale(10),
+                    borderRadius:moderateScale(20),
+                  },
+                  type == 'Months' ? {
+                    backgroundColor:'#253241',
+                  } : {}
+                ]}
+              >
+                <Text
+                style={{
+                  color:'#CAD4DC',
+                  fontSize:moderateScale(16.5),
+                  fontFamily: "Mplus-Bold",
+                }}
+                >Months</Text>
+              </Pressable>
+              <Pressable
+              onPress={() => {
+                console.log('Weeks');
+              }}
+              style={{
+                backgroundColor:'#253241',
+                padding:moderateScale(10),
+                borderRadius:moderateScale(20),
+              }}
+              >
+                      <Image
+                        source={require('../assets/AddWaterPlus.png')}
+                        style={{
+                        }}
+                      ></Image>
+              </Pressable>
             </View>
             <View
             style={{
@@ -277,10 +596,19 @@ function CalenderScreen(props) {
                     flex:1,
                     flexDirection:'row',
                     justifyContent:'space-between',
+                    marginTop:verticalScale(24),
                   }}
                 >
                   <Text>Next</Text>
-                  <Text>7 Day</Text>
+                  <Text
+                  style={{
+                    color:'#495057',
+                    fontSize:moderateScale(22),
+                    fontFamily: "Mplus-Bold",
+                  }}
+                  >
+                    {type == 'Days' ? 'Last 7 Days' : type == 'Weeks' ? 'Last 4 Weeks' : 'Last 6 Months'}
+                  </Text>
                   <Text>Prev</Text>
                 </View>
                 <Chart
@@ -354,7 +682,12 @@ function CalenderScreen(props) {
               color:'#3CB4C6'
             }}
             >
-              627 ml
+              {
+                selectedDateData.reduce((acc,curr) => {
+                  acc += curr.value;
+                  return acc;
+                },0)+ 'ml'
+              }
             </Text>
             <Text
             style={{
@@ -365,24 +698,24 @@ function CalenderScreen(props) {
             >
               Hydration ○ 29% of your goal
             </Text>
-            <Text
-            style={{
-              fontSize:moderateScale(15),
-              fontFamily: "Mplus-Bold",
-              color:'#3CB4C6'
-            }}
-            >
-              660ml consumed in total
-            </Text>
            </View>
            <FlatList
-           data={[{
-            key: '1',
-            title: 'Water',
-            value: '627 ml',
-            time: '8:00 AM'
-           }]}
+           data={selectedDateData}
            keyExtractor={item => item.key}
+           ListEmptyComponent={() => (
+              <View
+              style={{
+                width:verticalScale(200),
+                height:horizontalScale(200),
+                justifyContent:'center',
+                alignItems:'center',
+              }}
+              >
+                <Text>
+                  No Data Found
+                </Text>
+              </View>
+           )}
            renderItem={({item}) => (
             <View
             style={{
@@ -391,7 +724,6 @@ function CalenderScreen(props) {
               justifyContent:'space-between',
               alignItems:'center',
               flexDirection:'row',
-              backgroundColor:'#f9fbfa',
               borderRadius:moderateScale(20),
               padding:moderateScale(20),
               marginTop:verticalScale(15),
@@ -403,26 +735,50 @@ function CalenderScreen(props) {
                 flex:1
               }}
               >
-                <Text>
-                  Icon
-                </Text>
+                <Image
+                source={require('../assets/CalenderScreenDrinkIcons/Almond Milk.png')}
+                style={{
+                  width:moderateScale(40),
+                  height:moderateScale(40)
+                }}
+                ></Image>
               </View>
               <View
               style={{
-                flex:1
+                flex:2
               }}
               >
-                <Text>{item.title}</Text>
-                <Text>{item.value}</Text>
+                <Text
+                style={{
+                  fontSize:moderateScale(16),
+                  fontFamily: "Mplus-Bold",
+                  color:'#35BDCF'
+                }}
+                >
+                  {item.title.charAt(0).toUpperCase() + item.title.slice(1).toLowerCase()}
+                </Text>
+                <Text
+                style={{
+                  color:'#4C5157',
+                  fontFamily: "Mplus-Bold",
+                  fontSize:moderateScale(12),
+                }}
+                >{item.value}</Text>
               </View>
               <View
               style={{
-                flex:2,
+                flex:1.5,
                 justifyContent:'flex-end',
                 alignItems:'flex-end',
               }}
               >
-                <Text>
+                <Text
+                style={{
+                  color:'#AEAEB1',
+                  fontSize:moderateScale(12),
+                  fontFamily: "Mplus-Bold"
+                }}
+                >
                 {item.time}
                 </Text>
               </View>

@@ -6,12 +6,13 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as SQLite from 'expo-sqlite';
 import { SQLiteProvider } from 'expo-sqlite';
 import * as FileSystem from 'expo-file-system';
+import { Provider } from 'react-redux';
+import { Asset } from 'expo-asset';
 
 import Recommend from './src/screens/Recommend';
 import HomeScreen from './src/screens/HomeScreen';
-
 import HomeScreenNavigation from './src/navigation/HomeScreenNavigation';
-import { Asset } from 'expo-asset';
+import store from './src/store/store';
 
 const Stack = createNativeStackNavigator();
 
@@ -79,6 +80,9 @@ export default function App() {
   }
 
   return (
+    <Provider
+    store={store}
+    >
     <NavigationContainer>
       <React.Suspense>
       <SQLiteProvider
@@ -97,6 +101,7 @@ export default function App() {
     </SQLiteProvider>
       </React.Suspense>
     </NavigationContainer>
+    </Provider>
   );
 }
 

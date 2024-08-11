@@ -21,6 +21,8 @@ import { useFonts } from 'expo-font';
 function SettingScreen(props) {
 
   const animated = new Animated.Value(1);
+  const recommendAnimated = new Animated.Value(1); 
+  const editListAnimated = new Animated.Value(1);
 
   const fadeIn = () => {
     Animated.timing(animated, {
@@ -109,26 +111,35 @@ function SettingScreen(props) {
               alignItems:'center',
             }}
           >
+            <Animated.View
+              style={
+                {
+                width:"100%",
+                flex:1,
+                justifyContent:'center',
+                alignItems:'center',
+                borderRadius:30,
+                flexDirection:'row',
+                justifyContent:'space-between',
+                alignItems:'flex-start',
+                padding:20,
+                backgroundColor: '#e0f8fc',
+                transform: [{scale: animated}]
+                }
+              }
+            >
             <Pressable
             onPress={() => {
               props.navigation.navigate('RemainderScreen');
             }}
-            onPressIn={fadeIn}
-            onPressOut={fadeOut}
-            style={
-              {
-              width:"100%",
-              flex:1,
-              justifyContent:'center',
-              alignItems:'center',
-              borderRadius:30,
-              flexDirection:'row',
-              justifyContent:'space-between',
-              alignItems:'flex-start',
-              padding:20,
-              backgroundColor: '#e0f8fc',
-              }
-            }
+            onPressIn={() => {
+              console.log('On Press In');
+              animated.setValue(0.97);
+            }}
+            onPressOut={() => {
+              console.log('On Press Out');
+              animated.setValue(1);
+            }}
             >
               <View>
                 <Text style={{
@@ -168,7 +179,8 @@ function SettingScreen(props) {
                 </Text>
                 </View>
               </View>
-              <View
+            </Pressable>              
+            <View
               style={{
                 flex:1,
                 flexDirection:'row',
@@ -198,15 +210,9 @@ function SettingScreen(props) {
                 }}
                 ></Image>
               </View>
-            </Pressable>
-            <Pressable
-            onPress={() => {
-              props.navigation.navigate('Recommend');
-            }}
-            onPressIn={fadeIn}
-            onPressOut={fadeOut}
-            style={
-              {
+            </Animated.View>
+            <Animated.View
+            style={{
               width:"100%",
               flex:1,
               justifyContent:'center',
@@ -218,8 +224,21 @@ function SettingScreen(props) {
               padding:20,
               backgroundColor: '#00bedb',
               marginTop:20,
-              }
-            }
+              transform: [{scale: recommendAnimated}]
+              }}
+            >
+            <Pressable
+            onPress={() => {
+              props.navigation.navigate('Recommend');
+            }}
+            onPressIn={() => {
+              console.log('On Press In');
+              recommendAnimated.setValue(0.97);
+            }}
+            onPressOut={() => {
+              console.log('On Press Out');
+              recommendAnimated.setValue(1);
+            }}
             >
               <View>
                 <Text style={{
@@ -250,7 +269,8 @@ function SettingScreen(props) {
                 </Text>
                 </View>
               </View>
-              <View
+            </Pressable>
+            <View
               style={{
                 flex:1,
                 flexDirection:'row',
@@ -272,7 +292,7 @@ function SettingScreen(props) {
                 }}
                 ></Image>
               </View>
-            </Pressable>
+            </Animated.View>
             <Pressable
             onPress={() => {
               props.navigation.navigate('EditCustomDrinkListScreen');
@@ -334,6 +354,9 @@ function SettingScreen(props) {
               </View>
             </Pressable>
             <Pressable
+            onPress={() => {
+              props.navigation.navigate('WidgetsScreen');
+            }}
             style={{
               width:"100%",
               flex:1,
@@ -376,7 +399,7 @@ function SettingScreen(props) {
                     fontFamily:'Mplus-Bold',
                   }}
                  >
-                    Add/Edit drinks list
+                    Widgets
                  </Text>
               </View>
               <View
@@ -391,6 +414,9 @@ function SettingScreen(props) {
               </View>
             </Pressable>
             <Pressable
+            onPress={() => {
+              // props.navigation.navigate('EditCustomDrinkListScreen');
+            }}
             style={{
               width:"100%",
               flex:1,
@@ -433,7 +459,427 @@ function SettingScreen(props) {
                     fontFamily:'Mplus-Bold',
                   }}
                  >
-                    Add/Edit drinks list
+                    Measurement Units
+                 </Text>
+              </View>
+              <View
+              style={{
+                width:horizontalScale(20),
+                marginTop:10,
+              }}
+              >
+                <Image
+                source={require('../assets/BackButtonSetting.png')}
+                ></Image>
+              </View>
+            </Pressable>
+            <Pressable
+            onPress={() => {
+              // props.navigation.navigate('EditCustomDrinkListScreen');
+            }}
+            style={{
+              width:"100%",
+              flex:1,
+              justifyContent:'center',
+              alignItems:'center',
+              borderRadius:30,
+              flexDirection:'row',
+              justifyContent:'space-between',
+              alignItems:'flex-start',
+              padding:20,
+              backgroundColor: '#f9fbfa',
+              hadowColor: '#000',
+              shadowOffset: { width: 0, height: 1 },
+              shadowOpacity: 0.8,
+              shadowRadius: 2,  
+              elevation: 1,
+              marginTop:20,
+            }}
+            >
+              <View
+              style={{
+                flex:1,
+                flexDirection:'row',
+                justifyContent:'flex-start',
+                alignItems:'center',
+                gap:5
+              }}
+              >
+                 <View
+                 style={{
+                  backgroundColor:'gray',
+                  width:horizontalScale(40),
+                  height:verticalScale(40),
+                 }}
+                 ></View>
+                 <Text
+                  style={{
+                    color:'#464B51',
+                    fontSize:15,
+                    fontFamily:'Mplus-Bold',
+                  }}
+                 >
+                    Health Sync
+                 </Text>
+              </View>
+              <View
+              style={{
+                width:horizontalScale(20),
+                marginTop:10,
+              }}
+              >
+                <Image
+                source={require('../assets/BackButtonSetting.png')}
+                ></Image>
+              </View>
+            </Pressable>
+            <Pressable
+            onPress={() => {
+              // props.navigation.navigate('EditCustomDrinkListScreen');
+            }}
+            style={{
+              width:"100%",
+              flex:1,
+              justifyContent:'center',
+              alignItems:'center',
+              borderRadius:30,
+              flexDirection:'row',
+              justifyContent:'space-between',
+              alignItems:'flex-start',
+              padding:20,
+              backgroundColor: '#f9fbfa',
+              hadowColor: '#000',
+              shadowOffset: { width: 0, height: 1 },
+              shadowOpacity: 0.8,
+              shadowRadius: 2,  
+              elevation: 1,
+              marginTop:20,
+            }}
+            >
+              <View
+              style={{
+                flex:1,
+                flexDirection:'row',
+                justifyContent:'flex-start',
+                alignItems:'center',
+                gap:5
+              }}
+              >
+                 <View
+                 style={{
+                  backgroundColor:'gray',
+                  width:horizontalScale(40),
+                  height:verticalScale(40),
+                 }}
+                 ></View>
+                 <Text
+                  style={{
+                    color:'#464B51',
+                    fontSize:15,
+                    fontFamily:'Mplus-Bold',
+                  }}
+                 >
+                    SmartWatch
+                 </Text>
+              </View>
+              <View
+              style={{
+                width:horizontalScale(20),
+                marginTop:10,
+              }}
+              >
+                <Image
+                source={require('../assets/BackButtonSetting.png')}
+                ></Image>
+              </View>
+            </Pressable>
+            <Pressable
+            onPress={() => {
+              // props.navigation.navigate('EditCustomDrinkListScreen');
+            }}
+            style={{
+              width:"100%",
+              flex:1,
+              justifyContent:'center',
+              alignItems:'center',
+              borderRadius:30,
+              flexDirection:'row',
+              justifyContent:'space-between',
+              alignItems:'flex-start',
+              padding:20,
+              backgroundColor: '#f9fbfa',
+              hadowColor: '#000',
+              shadowOffset: { width: 0, height: 1 },
+              shadowOpacity: 0.8,
+              shadowRadius: 2,  
+              elevation: 1,
+              marginTop:20,
+            }}
+            >
+              <View
+              style={{
+                flex:1,
+                flexDirection:'row',
+                justifyContent:'flex-start',
+                alignItems:'center',
+                gap:5
+              }}
+              >
+                 <View
+                 style={{
+                  backgroundColor:'gray',
+                  width:horizontalScale(40),
+                  height:verticalScale(40),
+                 }}
+                 ></View>
+                 <Text
+                  style={{
+                    color:'#464B51',
+                    fontSize:15,
+                    fontFamily:'Mplus-Bold',
+                  }}
+                 >
+                    Language
+                 </Text>
+              </View>
+              <View
+              style={{
+                width:horizontalScale(20),
+                marginTop:10,
+              }}
+              >
+                <Image
+                source={require('../assets/BackButtonSetting.png')}
+                ></Image>
+              </View>
+            </Pressable>
+            <Pressable
+            onPress={() => {
+              // props.navigation.navigate('EditCustomDrinkListScreen');
+            }}
+            style={{
+              width:"100%",
+              flex:1,
+              justifyContent:'center',
+              alignItems:'center',
+              borderRadius:30,
+              flexDirection:'row',
+              justifyContent:'space-between',
+              alignItems:'flex-start',
+              padding:20,
+              backgroundColor: '#f9fbfa',
+              hadowColor: '#000',
+              shadowOffset: { width: 0, height: 1 },
+              shadowOpacity: 0.8,
+              shadowRadius: 2,  
+              elevation: 1,
+              marginTop:20,
+            }}
+            >
+              <View
+              style={{
+                flex:1,
+                flexDirection:'row',
+                justifyContent:'flex-start',
+                alignItems:'center',
+                gap:5
+              }}
+              >
+                 <View
+                 style={{
+                  backgroundColor:'gray',
+                  width:horizontalScale(40),
+                  height:verticalScale(40),
+                 }}
+                 ></View>
+                 <Text
+                  style={{
+                    color:'#464B51',
+                    fontSize:15,
+                    fontFamily:'Mplus-Bold',
+                  }}
+                 >
+                    Help and Support
+                 </Text>
+              </View>
+              <View
+              style={{
+                width:horizontalScale(20),
+                marginTop:10,
+              }}
+              >
+                <Image
+                source={require('../assets/BackButtonSetting.png')}
+                ></Image>
+              </View>
+            </Pressable>
+            <Pressable
+            onPress={() => {
+              // props.navigation.navigate('EditCustomDrinkListScreen');
+            }}
+            style={{
+              width:"100%",
+              flex:1,
+              justifyContent:'center',
+              alignItems:'center',
+              borderRadius:30,
+              flexDirection:'row',
+              justifyContent:'space-between',
+              alignItems:'flex-start',
+              padding:20,
+              backgroundColor: '#f9fbfa',
+              hadowColor: '#000',
+              shadowOffset: { width: 0, height: 1 },
+              shadowOpacity: 0.8,
+              shadowRadius: 2,  
+              elevation: 1,
+              marginTop:20,
+            }}
+            >
+              <View
+              style={{
+                flex:1,
+                flexDirection:'row',
+                justifyContent:'flex-start',
+                alignItems:'center',
+                gap:5
+              }}
+              >
+                 <View
+                 style={{
+                  backgroundColor:'gray',
+                  width:horizontalScale(40),
+                  height:verticalScale(40),
+                 }}
+                 ></View>
+                 <Text
+                  style={{
+                    color:'#464B51',
+                    fontSize:15,
+                    fontFamily:'Mplus-Bold',
+                  }}
+                 >
+                    Hydrate your friends
+                 </Text>
+              </View>
+              <View
+              style={{
+                width:horizontalScale(20),
+                marginTop:10,
+              }}
+              >
+                <Image
+                source={require('../assets/BackButtonSetting.png')}
+                ></Image>
+              </View>
+            </Pressable>
+            <Pressable
+            onPress={() => {
+              // props.navigation.navigate('EditCustomDrinkListScreen');
+            }}
+            style={{
+              width:"100%",
+              flex:1,
+              justifyContent:'center',
+              alignItems:'center',
+              borderRadius:30,
+              flexDirection:'row',
+              justifyContent:'space-between',
+              alignItems:'flex-start',
+              padding:20,
+              backgroundColor: '#f9fbfa',
+              hadowColor: '#000',
+              shadowOffset: { width: 0, height: 1 },
+              shadowOpacity: 0.8,
+              shadowRadius: 2,  
+              elevation: 1,
+              marginTop:20,
+            }}
+            >
+              <View
+              style={{
+                flex:1,
+                flexDirection:'row',
+                justifyContent:'flex-start',
+                alignItems:'center',
+                gap:5
+              }}
+              >
+                 <View
+                 style={{
+                  backgroundColor:'gray',
+                  width:horizontalScale(40),
+                  height:verticalScale(40),
+                 }}
+                 ></View>
+                 <Text
+                  style={{
+                    color:'#464B51',
+                    fontSize:15,
+                    fontFamily:'Mplus-Bold',
+                  }}
+                 >
+                    Restore Purchases
+                 </Text>
+              </View>
+              <View
+              style={{
+                width:horizontalScale(20),
+                marginTop:10,
+              }}
+              >
+                <Image
+                source={require('../assets/BackButtonSetting.png')}
+                ></Image>
+              </View>
+            </Pressable>
+            <Pressable
+            onPress={() => {
+              // props.navigation.navigate('EditCustomDrinkListScreen');
+            }}
+            style={{
+              width:"100%",
+              flex:1,
+              justifyContent:'center',
+              alignItems:'center',
+              borderRadius:30,
+              flexDirection:'row',
+              justifyContent:'space-between',
+              alignItems:'flex-start',
+              padding:20,
+              backgroundColor: '#f9fbfa',
+              hadowColor: '#000',
+              shadowOffset: { width: 0, height: 1 },
+              shadowOpacity: 0.8,
+              shadowRadius: 2,  
+              elevation: 1,
+              marginTop:20,
+            }}
+            >
+              <View
+              style={{
+                flex:1,
+                flexDirection:'row',
+                justifyContent:'flex-start',
+                alignItems:'center',
+                gap:5
+              }}
+              >
+                 <View
+                 style={{
+                  backgroundColor:'gray',
+                  width:horizontalScale(40),
+                  height:verticalScale(40),
+                 }}
+                 ></View>
+                 <Text
+                  style={{
+                    color:'#464B51',
+                    fontSize:15,
+                    fontFamily:'Mplus-Bold',
+                  }}
+                 >
+                    Term & Privacy
                  </Text>
               </View>
               <View

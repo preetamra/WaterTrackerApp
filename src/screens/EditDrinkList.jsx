@@ -20,9 +20,14 @@ import { horizontalScale, moderateScale, verticalScale } from '../Utils/Responsi
 import { GestureHandlerRootView, ScrollView } from 'react-native-gesture-handler';
 import { useFonts } from 'expo-font';
 import { useSQLiteContext } from 'expo-sqlite';
+import { useSelector, useDispatch } from 'react-redux';
+import { categoryActions } from '../store/categoriesSlice';
   
 function EditDrinkList(props) {
   const [categories, setCategories] = useState([]);
+
+  const categoriesList = useSelector((state) => state.categories.value);
+  const dispatch = useDispatch();
 
   const db = useSQLiteContext();
 
@@ -41,8 +46,13 @@ function EditDrinkList(props) {
   const getData = async () => {
     try {
         const value = await db.getAllAsync('SELECT * FROM Categories');
-        console.log(value);
         setCategories(value);
+
+        dispatch(categoryActions.allCategoriesList(value));
+
+        const value1 = await db.getAllAsync('SELECT * FROM Categories WHERE enabled = 1');
+        dispatch (categoryActions.allEnabledCategoriesList(value1));
+
     } catch (e) {
       // error reading value
       console.error(e);
@@ -212,9 +222,9 @@ function EditDrinkList(props) {
               </Text>        
             </View>
             {
-            categories.length != 0 &&
+            categoriesList.length != 0 &&
             <FlatList
-            data={categories}
+            data={categoriesList}
             renderItem={(item) => {
                return(
                 <View

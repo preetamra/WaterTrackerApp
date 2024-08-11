@@ -134,24 +134,24 @@ const App = ({ month, year, increaseCal, decreaseCal, selectedDate, setSelectedD
 
               const isSelected = day === selectedDate.getDate() && month === selectedDate.getMonth() + 1 && year === selectedDate.getFullYear();
 
-              console.log('Day:', day);
-              console.log('Month:', month);
-              console.log('Year:', year);
-              console.log('Selected Date:', selectedDate);
-              console.log("isDayEqual", day === selectedDate.getDate());
-              console.log("isMonthEqual", month === selectedDate.getMonth() + 1);
-              console.log("isYearEqual", year === selectedDate.getFullYear());
-              console.log("isSelected", isSelected);
+              // console.log('Day:', day);
+              // console.log('Month:', month);
+              // console.log('Year:', year);
+              // console.log('Selected Date:', selectedDate);
+              // console.log("isDayEqual", day === selectedDate.getDate());
+              // console.log("isMonthEqual", month === selectedDate.getMonth() + 1);
+              // console.log("isYearEqual", year === selectedDate.getFullYear());
+              // console.log("isSelected", isSelected);
 
               if(isPastDate)
               {
                 return (
                   <Text
                     onPress={() => {
-                      console.log('Day:', day);
-                      console.log('Month:', month);
-                      console.log('Year:', year);
-                      console.log('Selected Date:', selectedDate);
+                      // console.log('Day:', day);
+                      // console.log('Month:', month);
+                      // console.log('Year:', year);
+                      // console.log('Selected Date:', selectedDate);
 
                       let newDate = new Date(year, month - 1, day);
                       // newDate.setDate(newDate.getDate() + 1);

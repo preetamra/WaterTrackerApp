@@ -1,23 +1,25 @@
 import React, { useState } from 'react';
 import { View, StyleSheet, Text } from 'react-native';
 import { verticalScale, moderateScale } from '../Utils/ResponsiveDesign';
-import { color } from 'd3';
 
 const App = (props) => {
     return(
         <View
-                style={{
-                  flex:5,
-                  flexDirection:'row',
-                  justifyContent:'space-between',
-                  alignItems:'flex-end',
-                  marginBottom:verticalScale(20),
-                  marginTop:verticalScale(20),
-                }}
-                >
-                    {props?.data?.map((item,index) => {
-                        return(
-<View
+          style={{
+            flex:5,
+            flexDirection:'row',
+            justifyContent:'space-between',
+            alignItems:'flex-end',
+            marginBottom:verticalScale(20),
+            marginTop:verticalScale(20),
+            width:'100%',
+            height:verticalScale(150),
+          }}
+        >
+          {props?.data?.map((item,index) => {
+            // console.log("item",item);
+              return(
+                <View
                   style={{
                     backgroundColor:'#f9fbfa',
                     height:'100%',
@@ -50,7 +52,7 @@ const App = (props) => {
                             fontSize:moderateScale(16),
                         }}
                         >
-                            {item?.value}
+                            {item?.size}ml
                         </Text>
                       </View>
                     </View>

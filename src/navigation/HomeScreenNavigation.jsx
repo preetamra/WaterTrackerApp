@@ -14,6 +14,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import Test from '../screens/TestAnimation';
 import AddCustomDrinkScreen from '../screens/AddCustomDrinkScreen';
 import EditDrinkList from '../screens/EditDrinkList';
+import WidgetScreen from '../screens/WidgetsScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -62,6 +63,10 @@ export default function HomeScreenNavigation() {
         <Stack.Screen
         name='EditCustomDrinkListScreen'
         component={EditDrinkList}
+        />
+        <Stack.Screen
+        name='WidgetsScreen'
+        component={WidgetScreen}
         />
       </Stack.Navigator>
     </SafeAreaView>

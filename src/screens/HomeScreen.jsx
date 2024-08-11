@@ -39,6 +39,9 @@ import GlassOfWaterSvg from '../assets/glassOfWaterSvg';
 import { horizontalScale, moderateScale, verticalScale } from '../Utils/ResponsiveDesign';
 import AddWaterScreen from './AddWaterScreen';
 import Rive from 'rive-react-native';
+import { useSelector,useDispatch } from 'react-redux';
+import { categoryActions } from '../store/categoriesSlice';
+import AsyncStorage from '@react-native-async-storage/async-storage';
   
 const size = 200;
 const value = 45;
@@ -73,7 +76,10 @@ const customTransition = SharedTransition.custom((values) => {
 });
 
 function HomeScreen(props) {
-  const [categories, setCategories] = useState([]);
+
+  const enabledValues = useSelector((state) => state.categories.enabledValues);
+  const todaysTransactions = useSelector((state) => state.categories.todaysTransactions);
+  const dispatch = useDispatch();
 
   const db = useSQLiteContext();
 
@@ -92,8 +98,10 @@ function HomeScreen(props) {
   const riveRef = useRef(null);
   const riveRefStreck = useRef(null);
 
-  const [addWaterSelected, setAddWaterSelected] = useState(false);
   const [showOriginal, setShowOriginal] = useState(false);
+  const [recommended, setRecommended] = useState("");
+  const [todaysTotalWater, setTodaysTotalWater] = useState(0);
+  const [remainingWater, setRemainingWater] = useState("");
 
   useEffect(() => {
     runOnJS(riveRef?.current?.setInputState)("State Machine 1", "showOriginal",showOriginal);
@@ -107,11 +115,65 @@ function HomeScreen(props) {
     runOnJS(riveRefStreck?.current?.setTextRunValue)("StreckText","5");
   },[]);
 
+  useEffect(() => {
+    // console.log("Todays Transactions :- ",todaysTransactions);
+    const getData = async () => {
+      try {
+        const value = await AsyncStorage.getItem('recommend');
+        if (value !== null) {
+          // console.log("Recommend :- ",value);
+          setRecommended(value);
+          let todayWater = 0;
+          todaysTransactions.forEach((transaction) => {
+            // console.log("Transaction :- ",transaction);
+            todayWater += transaction.size;
+          });
+          setTodaysTotalWater(todayWater);
+          // console.log("Remaining  :- ",recommended - todayWater);
+          // console.log("Today Water :- ",todayWater);
+          let remaining = recommended - todayWater;
+          if(remaining > 0)
+          {
+            setRemainingWater(`${recommended - todayWater}`);
+          }else{
+            setRemainingWater("Completed Goal");
+            // riveRefStreck.current.setInputState("State Machine 1","Progress",100);
+          }
+        }
+      } catch (e) {
+        // error reading value
+        console.error(e);
+      }
+    };
+
+    getData();
+  },[todaysTransactions]);
+
   const getData = async () => {
     try {
       const value = await db.getAllAsync('SELECT * FROM Categories WHERE enabled = 1');
-      console.log("Home Screen :- ",value);
-      setCategories(value);
+      // console.log("Home Screen :- ",value);
+      // setCategories(value);
+      dispatch(categoryActions.allEnabledCategoriesList(value));
+    } catch (e) {
+      // error reading value
+      console.error(e);
+    }
+  }
+
+  const getDataTransactions = async () => {
+    try {
+      const startDate = new Date();
+      startDate.setHours(0, 0, 0, 0); // Set start of today
+
+      const endDate = new Date();
+      endDate.setHours(23, 59, 59, 999); // Set end of today
+
+      const value = await db.getAllAsync('SELECT * FROM Transactions WHERE dateTime BETWEEN ? AND ?', [startDate.toISOString(), endDate.toISOString()]);
+      console.log("Transaction :- ",value);
+      // setCategories(value);
+      // dispatch(categoryActions.allEnabledCategoriesList(value));
+      dispatch(categoryActions.todaysTransactions(value));
     } catch (e) {
       // error reading value
       console.error(e);
@@ -123,6 +185,7 @@ function HomeScreen(props) {
         async() => {
           try{
             await getData();
+            await getDataTransactions();
           }catch(e){
             console.error(e);
           }
@@ -130,21 +193,17 @@ function HomeScreen(props) {
      )()
   }, []);
 
+  useEffect(() => {
+    riveRef?.current?.setInputState("State Machine 1","progress",isNaN((Math.round(todaysTotalWater*100)/recommended).toFixed(0))?0:(Math.round(todaysTotalWater*100)/recommended).toFixed(0));
+  },[showOriginal]);
+
   return (
-        addWaterSelected ?
-        <AddWaterScreen
-        switchScreen={() => {
-          setAddWaterSelected(false);
-        }}
-        setState={setAddWaterSelected}
-        ></AddWaterScreen>
-        :
         <SafeAreaView
         style={{
-          flex: 8,
-          justifyContent: 'center',
+          flex: 9,
           alignItems: 'center',
           backgroundColor: 'white',
+          paddingBottom: verticalScale(20),
         }}>
           <View
           style={{
@@ -215,7 +274,7 @@ function HomeScreen(props) {
               resizeMode: 'center',
               transform: [{scale: 0.6}]
             }}
-            ></Image>    
+            ></Image>
           </Pressable>
           </View>
           <View
@@ -228,13 +287,41 @@ function HomeScreen(props) {
           }}
           >
             <Text
-            style={{
-              color:'#18B3CE',
-              fontSize:verticalScale(54),
-              fontFamily:'Mplus-Bold'
-            }}
-            >
-             330ml
+            style={
+              [
+                {
+                  color:'#18B3CE',
+                  fontSize:verticalScale(37),
+                  fontFamily:'Mplus-Bold'
+                },
+                showOriginal ?
+                isNaN(parseInt(remainingWater))
+                ?
+                {
+                  color: '#353C47',
+                  fontSize:verticalScale(37),
+                  fontFamily:'Mplus-Bold'
+                }
+                :
+                {
+                  color: '#353C47',
+                  fontSize:verticalScale(37),
+                  fontFamily:'Mplus-Bold'
+                }
+                :
+                {
+                  color:'#18B3CE',
+                  fontSize:verticalScale(37),
+                  fontFamily:'Mplus-Bold'
+                }
+              ]}>
+             {
+              showOriginal
+              ?
+                isNaN(Math.round(remainingWater))?0:Math.round(remainingWater) +"ml"
+              :
+                todaysTotalWater+"ml"
+             }
             </Text>
             <Text
             style={{
@@ -243,13 +330,19 @@ function HomeScreen(props) {
               fontFamily:'Mplus-Bold'
             }}
             >
-            Hydration ○ 29% of your goal
+            {
+              showOriginal
+              ?
+              `Remaining ${isNaN(100 - (Math.round(todaysTotalWater*100)/recommended).toFixed(0))?0:100 - (Math.round(todaysTotalWater*100)/recommended).toFixed(0)}% of your daily goal`
+              :
+              `Hydrated ${isNaN((Math.round(todaysTotalWater*100)/recommended).toFixed(0))?0:(Math.round(todaysTotalWater*100)/recommended).toFixed(0)}% of your daily goal`
+            }
            </Text>
           </View>
           <View
           style={{
             flex:4,
-            width:horizontalScale(450),
+            width:horizontalScale(400),
             height:verticalScale(450),
             position: 'relative',
           }}>
@@ -270,7 +363,7 @@ function HomeScreen(props) {
           }}
           ></Pressable>
           <Rive
-          url={"https://firebasestorage.googleapis.com/v0/b/blockerplus-6ba24.appspot.com/o/TurtleRiveAnimation.riv?alt=media&token=8305ba32-2473-4cba-8e5b-a655800f1140"}
+          resourceName='turleanimation'
           artboardName="Turtle Background"
           stateMachineName='State Machine 1'
           style={{
@@ -280,29 +373,67 @@ function HomeScreen(props) {
             zIndex: 1,
             position: 'absolute',
             top: 0,
-            left:15,
-            transform: [{scale: 0.9}]
+            left:0,
+            transform: [
+              {
+                scale: 0.9
+              }
+            ]
           }}
           ref={riveRef}
           ></Rive>
           </View>
           <ScrollView
+          decelerationRate={0.8}
           style={{
-            flex:2,
+            flex:3,
             flexDirection: 'row',
             width: '100%',
-            backgroundColor: 'red',
           }}
           horizontal={true}
           showsHorizontalScrollIndicator={false}
           >
            {
-            categories.map((category,index) => {
-              console.log(category);
+            enabledValues.map((category,index) => {
+              const image = images.find((image) => image.title === category.name);
               return(
-                <Text>
-                  ABC
-                </Text>
+               <Pressable
+               key={Math.floor(Math.random() * 1000)}
+               onPress={() => {
+                  props.navigation.navigate('CustomDrinkScreen',{category: category});
+               }}
+               style={
+                [
+                  {
+                    flex:1,
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    width: horizontalScale(100),
+                    height: '100%',
+                  },
+                  index === 0 ? {marginLeft: horizontalScale(120)} : {},
+                ]}
+               >
+                 <Image
+                 source={image.image}
+                 style={{
+                   width: horizontalScale(100),
+                   height: '70%',
+                   resizeMode: 'center'
+                 }}
+                 ></Image>
+                 <Text
+                 style={{
+                    color: '#C0C0C0',
+                    fontSize: verticalScale(14),
+                    fontFamily: 'Mplus-Bold',
+                    height: '30%',
+                    textAlign: 'center',
+                 }}
+                 >
+                    {category.name}
+                  </Text>
+               </Pressable>
               );
             })
            }

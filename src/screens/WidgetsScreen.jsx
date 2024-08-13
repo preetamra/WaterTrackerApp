@@ -17,6 +17,8 @@ import {
 import { horizontalScale, verticalScale } from '../Utils/ResponsiveDesign';
 import { GestureHandlerRootView, ScrollView } from 'react-native-gesture-handler';
 import { useFonts } from 'expo-font';
+import { WidgetPreview } from 'react-native-android-widget';
+import { HelloWidget } from '../Widget/HelloWidget';
   
 function WidgetScreen(props) {
 
@@ -44,9 +46,11 @@ function WidgetScreen(props) {
         alignItems: 'center',
         justifyContent: 'center',
       }}>
-         <Text>
-            Widget Screen
-         </Text>
+        <WidgetPreview
+        renderWidget={() => <HelloWidget />}
+        width={320}
+        height={200}
+      />
       </SafeAreaView>
     </GestureHandlerRootView>
   );

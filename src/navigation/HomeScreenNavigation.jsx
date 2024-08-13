@@ -64,10 +64,6 @@ export default function HomeScreenNavigation() {
         name='EditCustomDrinkListScreen'
         component={EditDrinkList}
         />
-        <Stack.Screen
-        name='WidgetsScreen'
-        component={WidgetScreen}
-        />
       </Stack.Navigator>
     </SafeAreaView>
   );

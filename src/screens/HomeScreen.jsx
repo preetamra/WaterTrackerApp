@@ -1,50 +1,31 @@
 import React,{
-    useEffect,
-    useState,
-    useRef
+  useEffect,
+  useState,
+  useRef
 } from 'react';
 import {
-  Button,
   SafeAreaView,
-  StyleSheet,
-  TextInput,
   View,
   Text,
-  Dimensions,
   Pressable,
   Image,
   ScrollView,
-  FlatList,
   TouchableOpacity
 } from 'react-native';
-import { line, curveBasis,area, scaleLinear } from 'd3';
 import {
-  useSharedValue,
-  withRepeat,
-  withTiming,
-  useDerivedValue,
-  Easing,
   SharedTransition,
   withSpring,
   runOnJS
 } from 'react-native-reanimated';
-import Animated from 'react-native-reanimated';
-import * as BackgroundFetch from 'expo-background-fetch';
-import * as TaskManager from 'expo-task-manager';
 import { useFonts } from 'expo-font';
 import { useSQLiteContext } from 'expo-sqlite';
-import CircularProgress from 'react-native-circular-progress-indicator';
+import ConfettiCannon from 'react-native-confetti-cannon';
 
-import GlassOfWaterSvg from '../assets/glassOfWaterSvg';
 import { horizontalScale, moderateScale, verticalScale } from '../Utils/ResponsiveDesign';
-import AddWaterScreen from './AddWaterScreen';
 import Rive from 'rive-react-native';
 import { useSelector,useDispatch } from 'react-redux';
 import { categoryActions } from '../store/categoriesSlice';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-  
-const size = 200;
-const value = 45;
 
 const images = [
   {
@@ -98,14 +79,14 @@ function HomeScreen(props) {
   const riveRef = useRef(null);
   const riveRefStreck = useRef(null);
 
+  const confettiRef = useRef(null);
+
   const [showOriginal, setShowOriginal] = useState(false);
   const [recommended, setRecommended] = useState("");
   const [todaysTotalWater, setTodaysTotalWater] = useState(0);
   const [remainingWater, setRemainingWater] = useState("");
-
-  useEffect(() => {
-    runOnJS(riveRef?.current?.setInputState)("State Machine 1", "showOriginal",showOriginal);
-  },[showOriginal]);
+  const [text1,setText1] = useState("");
+  const [text2,setText2] = useState("");
 
   useEffect(() => {
     runOnJS(riveRefStreck?.current?.setInputState)("State Machine 1", "Progress",100);
@@ -121,24 +102,13 @@ function HomeScreen(props) {
       try {
         const value = await AsyncStorage.getItem('recommend');
         if (value !== null) {
-          // console.log("Recommend :- ",value);
           setRecommended(value);
           let todayWater = 0;
           todaysTransactions.forEach((transaction) => {
-            // console.log("Transaction :- ",transaction);
             todayWater += transaction.size;
           });
           setTodaysTotalWater(todayWater);
-          // console.log("Remaining  :- ",recommended - todayWater);
-          // console.log("Today Water :- ",todayWater);
-          let remaining = recommended - todayWater;
-          if(remaining > 0)
-          {
-            setRemainingWater(`${recommended - todayWater}`);
-          }else{
-            setRemainingWater("Completed Goal");
-            // riveRefStreck.current.setInputState("State Machine 1","Progress",100);
-          }
+          riveRef?.current?.setInputState("State Machine 1","progress",parseInt(isNaN((Math.round(todayWater*100)/value).toFixed(0))?0:(Math.round(todayWater*100)/value).toFixed(0)));
         }
       } catch (e) {
         // error reading value
@@ -152,11 +122,8 @@ function HomeScreen(props) {
   const getData = async () => {
     try {
       const value = await db.getAllAsync('SELECT * FROM Categories WHERE enabled = 1');
-      // console.log("Home Screen :- ",value);
-      // setCategories(value);
       dispatch(categoryActions.allEnabledCategoriesList(value));
     } catch (e) {
-      // error reading value
       console.error(e);
     }
   }
@@ -171,11 +138,8 @@ function HomeScreen(props) {
 
       const value = await db.getAllAsync('SELECT * FROM Transactions WHERE dateTime BETWEEN ? AND ?', [startDate.toISOString(), endDate.toISOString()]);
       console.log("Transaction :- ",value);
-      // setCategories(value);
-      // dispatch(categoryActions.allEnabledCategoriesList(value));
       dispatch(categoryActions.todaysTransactions(value));
     } catch (e) {
-      // error reading value
       console.error(e);
     }
   }
@@ -194,8 +158,40 @@ function HomeScreen(props) {
   }, []);
 
   useEffect(() => {
-    riveRef?.current?.setInputState("State Machine 1","progress",isNaN((Math.round(todaysTotalWater*100)/recommended).toFixed(0))?0:(Math.round(todaysTotalWater*100)/recommended).toFixed(0));
+    console.log("Show Original :- ",showOriginal);
+    riveRef?.current?.setInputState("State Machine 1", "showOriginal",showOriginal);
+    if(!showOriginal)
+    {
+      setText1(Math.round(todaysTotalWater)+" ml");
+      setText2(Math.round((todaysTotalWater*100)/recommended)+"");
+    }else{
+      let remaining = recommended - todaysTotalWater;
+
+      if(remaining > 0)
+      {
+        setText1(Math.round(remaining)+" ml");
+        setText2(Math.round((remaining*100)/recommended)+"");
+        console.log("Remaining :- ",((remaining*100)/recommended)+"");
+      }else{
+        setText1("Completed Goal");
+        setText2("0");
+      }
+    }
   },[showOriginal]);
+
+  useEffect(() => {
+    let remaining = recommended - todaysTotalWater;
+
+    if(remaining > 0)
+    {
+
+    }else{
+      if(confettiRef.current)
+      {
+        confettiRef.current.start();
+      }
+    }
+  },[]);
 
   return (
         <SafeAreaView
@@ -205,6 +201,12 @@ function HomeScreen(props) {
           backgroundColor: 'white',
           paddingBottom: verticalScale(20),
         }}>
+          <ConfettiCannon
+            count={200}
+            origin={{x: -10, y: 0}}
+            autoStart={false}
+            ref={confettiRef}
+          />
           <View
           style={{
             flex:1,
@@ -298,7 +300,7 @@ function HomeScreen(props) {
                 isNaN(parseInt(remainingWater))
                 ?
                 {
-                  color: '#353C47',
+                  color:'#18B3CE',
                   fontSize:verticalScale(37),
                   fontFamily:'Mplus-Bold'
                 }
@@ -316,11 +318,7 @@ function HomeScreen(props) {
                 }
               ]}>
              {
-              showOriginal
-              ?
-                isNaN(Math.round(remainingWater))?0:Math.round(remainingWater) +"ml"
-              :
-                todaysTotalWater+"ml"
+              text1
              }
             </Text>
             <Text
@@ -333,9 +331,9 @@ function HomeScreen(props) {
             {
               showOriginal
               ?
-              `Remaining ${isNaN(100 - (Math.round(todaysTotalWater*100)/recommended).toFixed(0))?0:100 - (Math.round(todaysTotalWater*100)/recommended).toFixed(0)}% of your daily goal`
+              `Remaining ${text2}% of your daily goal`
               :
-              `Hydrated ${isNaN((Math.round(todaysTotalWater*100)/recommended).toFixed(0))?0:(Math.round(todaysTotalWater*100)/recommended).toFixed(0)}% of your daily goal`
+              `Hydrated ${text2}% of your daily goal`
             }
            </Text>
           </View>
@@ -359,7 +357,7 @@ function HomeScreen(props) {
             setShowOriginal(!showOriginal);
           }}
           onPress={() => {
-             setShowOriginal(!showOriginal);
+            setShowOriginal(!showOriginal);
           }}
           ></Pressable>
           <Rive
@@ -411,7 +409,9 @@ function HomeScreen(props) {
                     width: horizontalScale(100),
                     height: '100%',
                   },
-                  index === 0 ? {marginLeft: horizontalScale(120)} : {},
+                  index === 0 ? {
+                    marginLeft: horizontalScale(160)
+                  } : {},
                 ]}
                >
                  <Image

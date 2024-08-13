@@ -61,7 +61,7 @@ const AnimatedText  = Animated.createAnimatedComponent(TextInput);
 const nameToRiveAnimationMap = [
   {
     name:'SPARKLING WATER',
-    url:"https://firebasestorage.googleapis.com/v0/b/blockerplus-6ba24.appspot.com/o/Forever%20Bubblewrap.riv?alt=media&token=f7e1dbf5-b6fc-4f32-96b4-43eccb8b00fd"
+    url:'waterbottle'
   },
   {
     name: 'COCONUT WATER',
@@ -227,19 +227,6 @@ function AddCustomDrinkScreen(props) {
                 let percentage = (props.route.params.category.hydration * roundedValue) / 100;
                 console.log("percentage :- ",percentage);
 
-                const startDate = new Date();
-                startDate.setHours(0, 0, 0, 0); // Set start of today
-
-                const endDate = new Date();
-                endDate.setHours(23, 59, 59, 999); // Set end of today
-
-                const value = await db.getAllAsync('SELECT * FROM Transactions WHERE dateTime BETWEEN ? AND ?', [startDate.toISOString(), endDate.toISOString()]);
-                // console.log("value :- ", value);
-                // const AllVals = await db.getAllAsync('SELECT * FROM Transactions');
-                // console.log("All Vals :- ",AllVals);
-
-                dispatch(categoryActions.todaysTransactions(value));
-
                 const Vals = await db.getAllAsync('SELECT * FROM Transactions');
                 console.log("Values :- ",Vals);
 
@@ -277,12 +264,20 @@ function AddCustomDrinkScreen(props) {
                 }
 
                 let tempDate = new Date();
-                // tempDate.setDate(tempDate.getDate() - 1);
 
                 await db.runAsync('INSERT INTO Transactions (category_id,size,dateTime) VALUES (?,?,?)',[props.route.params.category.id,percentage,tempDate.toISOString()]);
 
-                props.navigation.goBack();
+                const startDate = new Date();
+                startDate.setHours(0, 0, 0, 0); // Set start of today
 
+                const endDate = new Date();
+                endDate.setHours(23, 59, 59, 999); // Set end of today
+
+                const value = await db.getAllAsync('SELECT * FROM Transactions WHERE dateTime BETWEEN ? AND ?', [startDate.toISOString(), endDate.toISOString()]);
+
+                dispatch(categoryActions.todaysTransactions(value));
+
+                props.navigation.goBack();
               }catch(e){
                 console.error(e);
               }
@@ -366,7 +361,7 @@ function AddCustomDrinkScreen(props) {
                       justifyContent: 'center',
                       alignItems: 'center',
                       height: "100%",
-                      marginTop: verticalScale(150),
+                      marginTop: verticalScale(110),
                     }}
                   >
                     {
@@ -643,6 +638,8 @@ function AddCustomDrinkScreen(props) {
                                   width: '100%',
                                   height: '100%',
                                   zIndex:3,
+                                  // backgroundColor: 'red',
+                                  // opacity: 0.5,
                                  }}
                                 onStartShouldSetResponder={() => true}
                                 onResponderMove={(e) => {
@@ -937,7 +934,8 @@ function AddCustomDrinkScreen(props) {
                   snapPoints={snapPoints}
                   onChange={handleSheetChanges}
                    >
-                    <BottomSheetView style={{
+                    <BottomSheetView 
+                    style={{
                       flex: 1,
                       alignItems: 'center',
                       justifyContent: 'center',

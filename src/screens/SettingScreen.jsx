@@ -1,6 +1,8 @@
 import React,{
     useEffect,
-    useState
+    useState,
+    useRef,
+    useCallback
 } from 'react';
 import {
     Button,
@@ -17,27 +19,22 @@ import {
 import { horizontalScale, verticalScale } from '../Utils/ResponsiveDesign';
 import { GestureHandlerRootView, ScrollView } from 'react-native-gesture-handler';
 import { useFonts } from 'expo-font';
+import {
+  BottomSheetModal,
+  BottomSheetView,
+  BottomSheetModalProvider,
+  BottomSheetTextInput
+} from '@gorhom/bottom-sheet';
+import AsyncStorage from '@react-native-async-storage/async-storage';
   
 function SettingScreen(props) {
 
   const animated = new Animated.Value(1);
   const recommendAnimated = new Animated.Value(1); 
-  const editListAnimated = new Animated.Value(1);
+  const [bottomSheetBackDrop, setBottomSheetBackDrop] = useState(false);
 
-  const fadeIn = () => {
-    Animated.timing(animated, {
-      toValue: 0.4,
-      duration: 100,
-      useNativeDriver: true,
-    }).start();
-  };
-  const fadeOut = () => {
-    Animated.timing(animated, {
-      toValue: 1,
-      duration: 200,
-      useNativeDriver: true,
-    }).start();
-  };
+  const bottomSheetModalMeasurementUnitsRef = useRef(null);
+  const snapPoints = React.useMemo(() => ['25%', '40%'], []);
 
   const [loaded, error] = useFonts({
     "Mplus-Black": require("../../assets/fonts//Mplus-Black.ttf"),
@@ -51,6 +48,16 @@ function SettingScreen(props) {
     "Fact-Narrow-Bold": require("../../assets/fonts//Fact-Narrow-Bold.ttf")
   });
 
+  const handleSheetChanges = useCallback((index) => {
+    if(index == 1)
+    {
+      setBottomSheetBackDrop(true);
+    }else if(index == -1)
+    {
+      setBottomSheetBackDrop(false);
+    }
+  }, []);
+
     return (
     <GestureHandlerRootView
     style={{
@@ -60,6 +67,7 @@ function SettingScreen(props) {
       backgroundColor: '#ffffff',
     }}
     >
+    <BottomSheetModalProvider>
       <SafeAreaView style={{
         flex: 1,
       }}>
@@ -102,7 +110,7 @@ function SettingScreen(props) {
               bottom:0,
               left:0,
               right:0,
-              zIndex:1,
+              zIndex:0,
               marginTop:verticalScale(80),
               marginLeft:horizontalScale(20),
             }}
@@ -355,67 +363,9 @@ function SettingScreen(props) {
             </Pressable>
             <Pressable
             onPress={() => {
-              props.navigation.navigate('WidgetsScreen');
-            }}
-            style={{
-              width:"100%",
-              flex:1,
-              justifyContent:'center',
-              alignItems:'center',
-              borderRadius:30,
-              flexDirection:'row',
-              justifyContent:'space-between',
-              alignItems:'flex-start',
-              padding:20,
-              backgroundColor: '#f9fbfa',
-              hadowColor: '#000',
-              shadowOffset: { width: 0, height: 1 },
-              shadowOpacity: 0.8,
-              shadowRadius: 2,  
-              elevation: 1,
-              marginTop:20,
-            }}
-            >
-              <View
-              style={{
-                flex:1,
-                flexDirection:'row',
-                justifyContent:'flex-start',
-                alignItems:'center',
-                gap:5
-              }}
-              >
-                 <View
-                 style={{
-                  backgroundColor:'gray',
-                  width:horizontalScale(40),
-                  height:verticalScale(40),
-                 }}
-                 ></View>
-                 <Text
-                  style={{
-                    color:'#464B51',
-                    fontSize:15,
-                    fontFamily:'Mplus-Bold',
-                  }}
-                 >
-                    Widgets
-                 </Text>
-              </View>
-              <View
-              style={{
-                width:horizontalScale(20),
-                marginTop:10,
-              }}
-              >
-                <Image
-                source={require('../assets/BackButtonSetting.png')}
-                ></Image>
-              </View>
-            </Pressable>
-            <Pressable
-            onPress={() => {
+              console.log('Measurement Units');
               // props.navigation.navigate('EditCustomDrinkListScreen');
+              bottomSheetModalMeasurementUnitsRef.current?.present();
             }}
             style={{
               width:"100%",
@@ -460,126 +410,6 @@ function SettingScreen(props) {
                   }}
                  >
                     Measurement Units
-                 </Text>
-              </View>
-              <View
-              style={{
-                width:horizontalScale(20),
-                marginTop:10,
-              }}
-              >
-                <Image
-                source={require('../assets/BackButtonSetting.png')}
-                ></Image>
-              </View>
-            </Pressable>
-            <Pressable
-            onPress={() => {
-              // props.navigation.navigate('EditCustomDrinkListScreen');
-            }}
-            style={{
-              width:"100%",
-              flex:1,
-              justifyContent:'center',
-              alignItems:'center',
-              borderRadius:30,
-              flexDirection:'row',
-              justifyContent:'space-between',
-              alignItems:'flex-start',
-              padding:20,
-              backgroundColor: '#f9fbfa',
-              hadowColor: '#000',
-              shadowOffset: { width: 0, height: 1 },
-              shadowOpacity: 0.8,
-              shadowRadius: 2,  
-              elevation: 1,
-              marginTop:20,
-            }}
-            >
-              <View
-              style={{
-                flex:1,
-                flexDirection:'row',
-                justifyContent:'flex-start',
-                alignItems:'center',
-                gap:5
-              }}
-              >
-                 <View
-                 style={{
-                  backgroundColor:'gray',
-                  width:horizontalScale(40),
-                  height:verticalScale(40),
-                 }}
-                 ></View>
-                 <Text
-                  style={{
-                    color:'#464B51',
-                    fontSize:15,
-                    fontFamily:'Mplus-Bold',
-                  }}
-                 >
-                    Health Sync
-                 </Text>
-              </View>
-              <View
-              style={{
-                width:horizontalScale(20),
-                marginTop:10,
-              }}
-              >
-                <Image
-                source={require('../assets/BackButtonSetting.png')}
-                ></Image>
-              </View>
-            </Pressable>
-            <Pressable
-            onPress={() => {
-              // props.navigation.navigate('EditCustomDrinkListScreen');
-            }}
-            style={{
-              width:"100%",
-              flex:1,
-              justifyContent:'center',
-              alignItems:'center',
-              borderRadius:30,
-              flexDirection:'row',
-              justifyContent:'space-between',
-              alignItems:'flex-start',
-              padding:20,
-              backgroundColor: '#f9fbfa',
-              hadowColor: '#000',
-              shadowOffset: { width: 0, height: 1 },
-              shadowOpacity: 0.8,
-              shadowRadius: 2,  
-              elevation: 1,
-              marginTop:20,
-            }}
-            >
-              <View
-              style={{
-                flex:1,
-                flexDirection:'row',
-                justifyContent:'flex-start',
-                alignItems:'center',
-                gap:5
-              }}
-              >
-                 <View
-                 style={{
-                  backgroundColor:'gray',
-                  width:horizontalScale(40),
-                  height:verticalScale(40),
-                 }}
-                 ></View>
-                 <Text
-                  style={{
-                    color:'#464B51',
-                    fontSize:15,
-                    fontFamily:'Mplus-Bold',
-                  }}
-                 >
-                    SmartWatch
                  </Text>
               </View>
               <View
@@ -759,66 +589,6 @@ function SettingScreen(props) {
                     fontFamily:'Mplus-Bold',
                   }}
                  >
-                    Hydrate your friends
-                 </Text>
-              </View>
-              <View
-              style={{
-                width:horizontalScale(20),
-                marginTop:10,
-              }}
-              >
-                <Image
-                source={require('../assets/BackButtonSetting.png')}
-                ></Image>
-              </View>
-            </Pressable>
-            <Pressable
-            onPress={() => {
-              // props.navigation.navigate('EditCustomDrinkListScreen');
-            }}
-            style={{
-              width:"100%",
-              flex:1,
-              justifyContent:'center',
-              alignItems:'center',
-              borderRadius:30,
-              flexDirection:'row',
-              justifyContent:'space-between',
-              alignItems:'flex-start',
-              padding:20,
-              backgroundColor: '#f9fbfa',
-              hadowColor: '#000',
-              shadowOffset: { width: 0, height: 1 },
-              shadowOpacity: 0.8,
-              shadowRadius: 2,  
-              elevation: 1,
-              marginTop:20,
-            }}
-            >
-              <View
-              style={{
-                flex:1,
-                flexDirection:'row',
-                justifyContent:'flex-start',
-                alignItems:'center',
-                gap:5
-              }}
-              >
-                 <View
-                 style={{
-                  backgroundColor:'gray',
-                  width:horizontalScale(40),
-                  height:verticalScale(40),
-                 }}
-                 ></View>
-                 <Text
-                  style={{
-                    color:'#464B51',
-                    fontSize:15,
-                    fontFamily:'Mplus-Bold',
-                  }}
-                 >
                     Restore Purchases
                  </Text>
               </View>
@@ -894,7 +664,59 @@ function SettingScreen(props) {
               </View>
             </Pressable>
           </ScrollView>
+          <BottomSheetModal
+            ref={bottomSheetModalMeasurementUnitsRef}
+            index={1}
+            snapPoints={snapPoints}
+            handleSheetChanges={handleSheetChanges}
+          >
+        <BottomSheetView
+        style={{
+          flex: 1,
+          justifyContent: 'center',
+          alignItems: 'center',
+          width: '100%',
+        }}
+        >
+          <Text>
+            Select Measurement Units
+          </Text>
+          <Button
+          title='ml (milli liter)'
+          onPress={() => {
+            (
+              async() => {
+                try{
+                  let res = await AsyncStorage.setItem("MEASUREMENT_UNIT","ml")
+                  console.log("res :- ",res);
+                }catch(e)
+                {
+                  console.log(e);
+                }
+              }
+            )()
+          }}
+          ></Button>
+          <Button
+          title='oz (ounce)'
+          onPress={() => {
+            (
+              async() => {
+                try{
+                  let res = await AsyncStorage.setItem("MEASUREMENT_UNIT","oz");
+                  console.log("res :- ",res);
+                }catch(e)
+                {
+                  console.log(e);
+                }
+              }
+            )()
+          }}
+          ></Button>
+        </BottomSheetView>
+      </BottomSheetModal>
       </SafeAreaView>
+      </BottomSheetModalProvider>
     </GestureHandlerRootView>
   );
 }

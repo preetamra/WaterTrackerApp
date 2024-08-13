@@ -39,6 +39,7 @@ import * as TaskManager from 'expo-task-manager';
 import { scheduleAllNotification, cancellAllNotification, scheduleNotificationAtTime } from '../Utils/NotificationSchedule';
 import { horizontalScale, moderateScale, verticalScale } from '../Utils/ResponsiveDesign';
 import convertTo12Hour from '../Utils/TimeUtills';
+import { useFonts } from 'expo-font';
 
 const BACKGROUND_FETCH_TASK = 'background-fetch';
 
@@ -121,6 +122,19 @@ const Item = (props) => {
 };
 
 function RemainderScreen(props) {
+
+  const [loaded, error] = useFonts({
+    "Mplus-Black": require("../../assets/fonts//Mplus-Black.ttf"),
+    "Mplus-Bold": require("../../assets/fonts//Mplus-Bold.ttf"),
+    "Mplus-ExtraBold": require("../../assets/fonts//Mplus-ExtraBold.ttf"),
+    "Mplus-Light": require("../../assets/fonts//Mplus-Light.ttf"),
+    "Mplus-Medium": require("../../assets/fonts//Mplus-Medium.ttf"),
+    "Mplus-Regular": require("../../assets/fonts//Mplus-Regular.ttf"),
+    "Mplus-Thin": require("../../assets/fonts//Mplus-Thin.ttf"),
+    "CoreSans-ExtraBold": require("../../assets/fonts//CoreSans-ExtraBold.ttf"),
+    "Fact-Narrow-Bold": require("../../assets/fonts//Fact-Narrow-Bold.ttf")
+  });
+
   const [isEnabled, setIsEnabled] = useState(false);
   const toggleSwitch = (value) => {
     setIsEnabled(previousState => !previousState);
@@ -448,7 +462,22 @@ function RemainderScreen(props) {
     }
 
     getCustomTimer();    
-  },[])
+  },[]);
+
+  useEffect(() => {
+    (
+      async () => {
+        try{
+          let res = await AsyncStorage.getItem('SELECTED_TAB');
+          console.log("Selected Tab :- ",parseInt(res));
+          setSelectedTab(parseInt(res));
+        }catch(e)
+        {
+          console.log(e);
+        }
+      }
+    )()
+  },[]);
 
   const [isRegistered, setIsRegistered] = React.useState(false);
   const [status, setStatus] = React.useState(null);
@@ -563,8 +592,7 @@ function RemainderScreen(props) {
             <Text
             style={{
               fontSize: moderateScale(25),
-              fontWeight: '500',
-              fontFamily: 'Inter'
+              fontFamily:'Mplus-Bold'
             }}
             >
               Remainder
@@ -594,12 +622,12 @@ function RemainderScreen(props) {
               }
             </Text>
             <Switch
-        trackColor={{false: '#f9fbfa', true: '#00bed8'}}
-        thumbColor={isEnabled ? 'white' : '#f4f3f4'}
-        ios_backgroundColor="#f9fbfa"
-        onValueChange={toggleSwitch}
-        value={isEnabled}
-      />
+              trackColor={{false: '#f9fbfa', true: '#00bed8'}}
+              thumbColor={isEnabled ? 'white' : '#f4f3f4'}
+              ios_backgroundColor="#f9fbfa"
+              onValueChange={toggleSwitch}
+              value={isEnabled}
+            />
           </View>
         </View>
         <View
@@ -655,6 +683,16 @@ function RemainderScreen(props) {
                 }
               ]}
               onPress={() => {
+                (
+                  async() => {
+                    try{
+                      await AsyncStorage.setItem('SELECTED_TAB',"0");
+                    }catch(e)
+                    {
+                      console.log(e);
+                    }
+                  }
+                )()
                 setSelectedTab(0);
               }}
              >
@@ -715,6 +753,16 @@ function RemainderScreen(props) {
                 }
               ]}
               onPress={() => {
+                (
+                  async() => {
+                    try{
+                      await AsyncStorage.setItem('SELECTED_TAB',"1");
+                    }catch(e)
+                    {
+                      console.log(e);
+                    }
+                  }
+                )()
                 setSelectedTab(1);
               }}
              >
@@ -1288,30 +1336,6 @@ function RemainderScreen(props) {
           </View>
         )
       }
-      <Button
-      title='Check Status'
-      onPress={() => {
-        checkStatusAsync();
-      }}
-      ></Button>
-      <Button
-      title='Unregister Task'
-      onPress={() => {
-        unregisterBackgroundFetchAsync();
-      }}
-      ></Button>
-        <Text>
-          Background fetch status:{' '}
-          <Text style={styles.boldText}>
-            {status && BackgroundFetch.BackgroundFetchStatus[status]}
-          </Text>
-        </Text>
-        <Text>
-          Background fetch task name:{' '}
-          <Text style={styles.boldText}>
-            {isRegistered ? BACKGROUND_FETCH_TASK : 'Not registered yet!'}
-          </Text>
-        </Text>
         </View>
       </View>
       <BottomSheetModal
